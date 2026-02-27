@@ -7216,6 +7216,9 @@
               >
                 Automation
               </button>
+              <button class="t8-tab" onclick="switchTab8(event, 't8-api-integration')">
+                API &amp; Integration
+              </button>
               <button class="t8-tab" onclick="switchTab8(event, 't8-cicd')">
                 CI/CD
               </button>
@@ -7232,10 +7235,10 @@
                 Security
               </button>
               <button class="t8-tab" onclick="switchTab8(event, 't8-db-perf')">
-                DB &amp; Perf
+                DB &amp; Performance
               </button>
               <button class="t8-tab" onclick="switchTab8(event, 't8-a11y')">
-                A11y &amp; Cross-Platform
+                Accessibility &amp; Cross-Platform
               </button>
               <button class="t8-tab" onclick="switchTab8(event, 't8-ai')">
                 AI Testing
@@ -7319,6 +7322,41 @@
                     <td><span class="sf-partial">SOAP/REST</span></td>
                     <td><span class="ease-med">Medium</span></td>
                     <td>Legacy SOAP integrations</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- ── TAB 1.5: API and Integration Testing ────── -->
+            <div class="t8-panel" id="t8-api-integration">
+              <div class="t8-panel-header">
+                <span class="t8-panel-label"
+                  >API and Integration Testing</span
+                >
+              </div>
+              <table class="t8-table">
+                <thead>
+                  <tr>
+                    <th>Tool</th>
+                    <th>Use Case</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Postman</td>
+                    <td>API development; quick manual tests; SF collection</td>
+                    <td><span class="cost-free">Free</span></td>
+                  </tr>
+                  <tr>
+                    <td>REST Assured</td>
+                    <td>Java-based; CI/CD integrated; framework-style</td>
+                    <td><span class="cost-free">Free</span></td>
+                  </tr>
+                  <tr>
+                    <td>SoapUI</td>
+                    <td>Legacy SOAP integrations; comprehensive</td>
+                    <td><span class="cost-mid">$</span></td>
                   </tr>
                 </tbody>
               </table>
