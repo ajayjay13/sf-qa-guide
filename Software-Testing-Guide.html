@@ -1,0 +1,2331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Software Testing Guide</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #080c14;
+        --bg2: #0d1220;
+        --bg3: #111827;
+        --surface: #141d2e;
+        --border: #1e2d47;
+        --accent: #00d4ff;
+        --accent2: #7c3aed;
+        --accent3: #10b981;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --text: #e2e8f0;
+        --text-dim: #7b8fb0;
+        --text-muted: #4a5a78;
+        --mono: "DM Mono", monospace;
+        --sans: "Syne", sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.7;
+        overflow-x: hidden;
+      }
+
+      /* Animated grid background */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Glow orbs */
+      .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.15;
+        pointer-events: none;
+        z-index: 0;
+        animation: drift 20s infinite alternate ease-in-out;
+      }
+      .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: #7c3aed;
+        top: -200px;
+        right: -200px;
+        animation-delay: 0s;
+      }
+      .orb-2 {
+        width: 400px;
+        height: 400px;
+        background: #00d4ff;
+        bottom: 20%;
+        left: -100px;
+        animation-delay: -7s;
+      }
+      .orb-3 {
+        width: 300px;
+        height: 300px;
+        background: #10b981;
+        bottom: -100px;
+        right: 30%;
+        animation-delay: -14s;
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(40px, 30px) scale(1.1);
+        }
+      }
+
+      /* Main layout */
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* ── HERO ── */
+      .hero {
+        padding: 100px 0 80px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: rgba(0, 212, 255, 0.08);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        padding: 6px 14px;
+        border-radius: 2px;
+        margin-bottom: 32px;
+      }
+      .hero-tag::before {
+        content: "◈";
+      }
+
+      h1 {
+        font-family: var(--sans);
+        font-size: clamp(42px, 6vw, 80px);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+      }
+      h1 span.accent-word {
+        color: var(--accent);
+      }
+      h1 span.accent-word2 {
+        color: var(--accent2);
+      }
+
+      .hero-sub {
+        font-size: 15px;
+        color: var(--text-dim);
+        max-width: 520px;
+        line-height: 1.8;
+        margin-bottom: 48px;
+      }
+
+      .stats-row {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+      }
+      .stat {
+      }
+      .stat-val {
+        font-family: var(--sans);
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-top: 4px;
+      }
+
+      /* ── NAV ── */
+      .toc {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: rgba(8, 12, 20, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      }
+      .toc-inner {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .toc-inner::-webkit-scrollbar {
+        display: none;
+      }
+      .toc-item {
+        flex-shrink: 0;
+        padding: 16px 20px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .toc-item:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(0, 212, 255, 0.04);
+      }
+
+      /* ── SECTIONS ── */
+      section {
+        padding: 80px 0;
+        border-bottom: 1px solid var(--border);
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+      section.visible {
+        opacity: 1;
+        transform: none;
+      }
+
+      .section-eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-eyebrow::before {
+        content: "//";
+        color: var(--text-muted);
+      }
+
+      h2 {
+        font-family: var(--sans);
+        font-size: clamp(28px, 4vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 16px;
+        line-height: 1.1;
+      }
+      h3 {
+        font-family: var(--sans);
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: var(--accent);
+      }
+      h4 {
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 10px;
+        letter-spacing: 0.05em;
+      }
+
+      .section-intro {
+        color: var(--text-dim);
+        max-width: 640px;
+        margin-bottom: 48px;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      /* ── PHASES GRID ── */
+      .phases-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+
+      .phase-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+        transition:
+          border-color 0.3s,
+          transform 0.3s;
+        cursor: default;
+      }
+      .phase-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+      }
+      .phase-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+      }
+      .phase-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .phase-num {
+        font-family: var(--sans);
+        font-size: 48px;
+        font-weight: 800;
+        color: rgba(0, 212, 255, 0.08);
+        position: absolute;
+        top: 16px;
+        right: 20px;
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .phase-title {
+        font-family: var(--sans);
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+
+      .phase-obj {
+        font-size: 12px;
+        color: var(--accent3);
+        margin-bottom: 14px;
+        letter-spacing: 0.05em;
+      }
+
+      .phase-activities {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .phase-activities li {
+        font-size: 12px;
+        color: var(--text-dim);
+        padding: 3px 0 3px 16px;
+        position: relative;
+        line-height: 1.5;
+      }
+      .phase-activities li::before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--accent2);
+        font-size: 10px;
+      }
+
+      .deliverable {
+        margin-top: 16px;
+        padding: 8px 12px;
+        background: rgba(0, 212, 255, 0.05);
+        border-left: 2px solid var(--accent);
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 0.05em;
+      }
+      .deliverable::before {
+        content: "DELIVERABLE ▸ ";
+        color: var(--text-muted);
+      }
+
+      /* ── TESTING TYPES ── */
+      .types-layout {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 768px) {
+        .types-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .type-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 24px;
+        transition: border-color 0.3s;
+      }
+      .type-card:hover {
+        border-color: var(--accent2);
+      }
+      .type-label {
+        display: inline-block;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 2px;
+        margin-bottom: 12px;
+      }
+      .type-label.black {
+        background: rgba(124, 58, 237, 0.2);
+        color: var(--accent2);
+        border: 1px solid rgba(124, 58, 237, 0.3);
+      }
+      .type-label.white {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--accent);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+      }
+      .type-label.gray {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent3);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .type-desc {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 14px;
+        line-height: 1.6;
+      }
+
+      .sub-type {
+        padding: 8px 0;
+        border-top: 1px solid var(--border);
+      }
+      .sub-type:first-child {
+        border-top: none;
+      }
+      .sub-type-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+      .sub-type-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ── PROCESS TIMELINE ── */
+      .timeline {
+        position: relative;
+        padding-left: 40px;
+      }
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: linear-gradient(
+          180deg,
+          var(--accent),
+          var(--accent2),
+          var(--accent3)
+        );
+      }
+
+      .timeline-item {
+        position: relative;
+        margin-bottom: 32px;
+        opacity: 0;
+        transform: translateX(-20px);
+        transition: all 0.5s ease;
+      }
+      .timeline-item.visible {
+        opacity: 1;
+        transform: none;
+      }
+
+      .timeline-dot {
+        position: absolute;
+        left: -34px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--bg);
+        box-shadow: 0 0 10px var(--accent);
+      }
+
+      .timeline-step {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+      .timeline-title {
+        font-family: var(--sans);
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .timeline-content {
+        font-size: 12px;
+        color: var(--text-dim);
+        line-height: 1.7;
+      }
+      .timeline-content ul {
+        list-style: none;
+        padding: 0;
+      }
+      .timeline-content li {
+        padding: 2px 0 2px 16px;
+        position: relative;
+      }
+      .timeline-content li::before {
+        content: "·";
+        position: absolute;
+        left: 6px;
+        color: var(--accent2);
+      }
+
+      /* ── COMPARISON TABLE ── */
+      .comparison-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      thead tr {
+        background: var(--bg3);
+        border-bottom: 2px solid var(--accent);
+      }
+      th {
+        padding: 16px 20px;
+        text-align: left;
+        font-family: var(--sans);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        white-space: nowrap;
+      }
+      th:first-child {
+        color: var(--text-muted);
+      }
+      th:nth-child(2) {
+        color: var(--warn);
+      }
+      th:nth-child(3) {
+        color: var(--accent);
+      }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+      }
+      tbody tr:hover {
+        background: rgba(0, 212, 255, 0.03);
+      }
+
+      td {
+        padding: 14px 20px;
+        color: var(--text-dim);
+        vertical-align: top;
+        line-height: 1.5;
+      }
+      td:first-child {
+        font-size: 12px;
+        color: var(--text);
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+      }
+
+      /* ── PROS/CONS ── */
+      .proscons-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 24px;
+      }
+      @media (max-width: 640px) {
+        .proscons-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .pro-card,
+      .con-card {
+        border-radius: 4px;
+        padding: 24px;
+      }
+      .pro-card {
+        background: rgba(16, 185, 129, 0.06);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+      .con-card {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+      .pro-card h4 {
+        color: var(--accent3);
+      }
+      .con-card h4 {
+        color: var(--danger);
+      }
+
+      .item-list {
+        list-style: none;
+        padding: 0;
+      }
+      .item-list li {
+        font-size: 12px;
+        color: var(--text-dim);
+        padding: 6px 0 6px 20px;
+        position: relative;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        line-height: 1.5;
+      }
+      .item-list li:last-child {
+        border-bottom: none;
+      }
+      .pro-card .item-list li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--accent3);
+        font-size: 11px;
+      }
+      .con-card .item-list li::before {
+        content: "✗";
+        position: absolute;
+        left: 0;
+        color: var(--danger);
+        font-size: 11px;
+      }
+
+      /* ── WHEN TO USE ── */
+      .when-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 640px) {
+        .when-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .when-card {
+        border-radius: 4px;
+        padding: 28px;
+      }
+      .when-manual {
+        background: rgba(245, 158, 11, 0.06);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+      .when-auto {
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+      }
+      .when-manual h3 {
+        color: var(--warn);
+      }
+      .when-auto h3 {
+        color: var(--accent);
+      }
+      .when-list {
+        list-style: none;
+        padding: 0;
+      }
+      .when-list li {
+        padding: 5px 0 5px 18px;
+        position: relative;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+      .when-manual .when-list li::before {
+        content: "✔";
+        position: absolute;
+        left: 0;
+        color: var(--warn);
+        font-size: 11px;
+      }
+      .when-auto .when-list li::before {
+        content: "✔";
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+        font-size: 11px;
+      }
+
+      /* ── TOOLS ── */
+      .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .tool-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 20px;
+        transition: all 0.3s;
+      }
+      .tool-card:hover {
+        border-color: var(--accent);
+        background: rgba(0, 212, 255, 0.04);
+      }
+      .tool-name {
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+      .tool-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ── FRAMEWORKS ── */
+      .fw-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .fw-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 24px;
+        transition: border-color 0.3s;
+      }
+      .fw-card:hover {
+        border-color: var(--accent2);
+      }
+      .fw-num {
+        font-family: var(--sans);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--accent2);
+        margin-bottom: 8px;
+      }
+      .fw-title {
+        font-family: var(--sans);
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .fw-desc {
+        font-size: 12px;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+
+      /* ── PHASES / IMPLEMENTATION ── */
+      .impl-phases {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+      }
+      .impl-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 24px;
+        position: relative;
+      }
+      .impl-phase-num {
+        font-family: var(--sans);
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: var(--accent3);
+        margin-bottom: 8px;
+      }
+      .impl-steps {
+        list-style: none;
+        padding: 0;
+        margin-top: 12px;
+      }
+      .impl-steps li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--text-dim);
+        padding: 4px 0;
+      }
+      .impl-steps li span {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        background: rgba(0, 212, 255, 0.1);
+        border: 1px solid rgba(0, 212, 255, 0.2);
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: var(--accent);
+        margin-top: 1px;
+      }
+
+      /* ── CHECKLIST ── */
+      .checklist {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 14px 16px;
+        font-size: 12px;
+      }
+      .check-box {
+        width: 18px;
+        height: 18px;
+        border: 1px solid var(--accent3);
+        border-radius: 2px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent3);
+        font-size: 10px;
+      }
+
+      /* ── DECISION MATRIX ── */
+      .matrix-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .matrix-item {
+        border-radius: 4px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .matrix-item.manual {
+        background: rgba(245, 158, 11, 0.06);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+      }
+      .matrix-item.auto {
+        background: rgba(0, 212, 255, 0.06);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+      }
+      .matrix-scenario {
+        font-size: 12px;
+        color: var(--text);
+      }
+      .matrix-tag {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        padding: 2px 8px;
+        border-radius: 2px;
+        width: fit-content;
+        text-transform: uppercase;
+      }
+      .manual .matrix-tag {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--warn);
+      }
+      .auto .matrix-tag {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--accent);
+      }
+
+      /* ── STLC vs SDLC ── */
+      .compare-vs {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 24px;
+        align-items: start;
+        margin-top: 24px;
+      }
+      @media (max-width: 640px) {
+        .compare-vs {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .vs-label {
+        font-family: var(--sans);
+        font-size: 40px;
+        font-weight: 800;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 24px;
+      }
+      .vs-side {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 24px;
+      }
+      .vs-side h4 {
+        font-family: var(--sans);
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .vs-side.sdlc h4 {
+        color: var(--accent2);
+      }
+      .vs-side.stlc h4 {
+        color: var(--accent);
+      }
+      .vs-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .vs-key {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        min-width: 80px;
+        padding-top: 2px;
+      }
+      .vs-val {
+        font-size: 12px;
+        color: var(--text-dim);
+        line-height: 1.5;
+      }
+
+      /* ── CONCLUSION ── */
+      .conclusion {
+        padding: 80px 0 60px;
+        border-bottom: none;
+      }
+      .conclusion-box {
+        background: linear-gradient(
+          135deg,
+          rgba(124, 58, 237, 0.1),
+          rgba(0, 212, 255, 0.05)
+        );
+        border: 1px solid rgba(124, 58, 237, 0.3);
+        border-radius: 4px;
+        padding: 48px;
+        position: relative;
+        overflow: hidden;
+      }
+      .conclusion-box::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 60%,
+          rgba(0, 212, 255, 0.05)
+        );
+        pointer-events: none;
+      }
+      .conclusion-box p {
+        font-size: 15px;
+        color: var(--text-dim);
+        line-height: 1.8;
+        margin-bottom: 24px;
+        max-width: 720px;
+      }
+      .takeaway-list {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 8px;
+      }
+      .takeaway-list li {
+        font-size: 13px;
+        color: var(--text-dim);
+        padding: 8px 12px 8px 28px;
+        position: relative;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 2px;
+        line-height: 1.4;
+      }
+      .takeaway-list li::before {
+        content: "▸";
+        position: absolute;
+        left: 10px;
+        color: var(--accent);
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        padding: 32px 0;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        border-top: 1px solid var(--border);
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── DIVIDERS ── */
+      .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 48px 0 40px;
+      }
+      .section-divider::before,
+      .section-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .section-divider span {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--text-muted);
+      }
+
+      /* ── RESPONSIVE OPTIMIZATION ── */
+      @media (max-width: 1024px) {
+        .container {
+          padding: 0 32px;
+        }
+        h1 {
+          font-size: clamp(36px, 8vw, 60px);
+        }
+        .hero {
+          padding: 80px 0 60px;
+        }
+        .conclusion-box {
+          padding: 40px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 0 20px;
+        }
+
+        .hero {
+          padding: 60px 0 40px;
+          text-align: center;
+        }
+        .hero-sub {
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .stats-row {
+          justify-content: center;
+          gap: 24px;
+        }
+        .stat-val {
+          font-size: 28px;
+        }
+
+        .toc {
+          top: 0;
+        }
+        .toc-item {
+          padding: 14px 16px;
+          font-size: 10px;
+        }
+
+        section {
+          padding: 60px 0;
+        }
+        h2 {
+          font-size: 28px;
+        }
+
+        .phases-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .types-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .timeline {
+          padding-left: 30px;
+        }
+        .timeline::before {
+          left: 8px;
+        }
+        .timeline-dot {
+          left: -26px;
+        }
+
+        .compare-vs {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        .vs-label {
+          padding: 0;
+          font-size: 24px;
+          height: 32px;
+        }
+
+        .proscons-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .when-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .tools-grid {
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+
+        .fw-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .impl-phases {
+          grid-template-columns: 1fr;
+        }
+
+        .checklist {
+          grid-template-columns: 1fr;
+        }
+
+        .matrix-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .conclusion-box {
+          padding: 32px 24px;
+          text-align: center;
+        }
+        .takeaway-list {
+          grid-template-columns: 1fr;
+          text-align: left;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 32px;
+        }
+        .hero-tag {
+          font-size: 9px;
+          padding: 4px 10px;
+        }
+        .stat-val {
+          font-size: 24px;
+        }
+        .stat-label {
+          font-size: 9px;
+        }
+
+        .toc-item {
+          padding: 12px 12px;
+        }
+
+        .phase-card {
+          padding: 24px;
+        }
+        .phase-num {
+          font-size: 32px;
+        }
+
+        .type-card {
+          padding: 20px;
+        }
+
+        .vs-side {
+          padding: 20px;
+        }
+
+        .conclusion-box h2 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- NAV -->
+    <nav class="toc">
+      <div class="container">
+        <div class="toc-inner">
+          <a href="index.html" class="toc-item">Ultimate-Salesforce-QA-Guide</a>
+          <a href="#stlc" class="toc-item">STLC</a>
+          <a href="#manual" class="toc-item">Manual Testing</a>
+          <a href="#automation" class="toc-item">Automation</a>
+          <a href="#comparison" class="toc-item">Comparison</a>
+          <a href="#tools" class="toc-item">Tools</a>
+          <a href="#bestpractices" class="toc-item">Best Practices</a>
+          <a href="#implementation" class="toc-item">Implementation</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="container">
+      <div class="hero">
+        <div class="hero-tag">Comprehensive Reference Guide</div>
+        <h1>
+          Software<br /><span class="accent-word">Testing</span><br /><span
+            class="accent-word2"
+            >Decoded.</span
+          >
+        </h1>
+        <p class="hero-sub">
+          A complete reference for STLC, manual testing, automation frameworks,
+          tools, and real-project best practices.
+        </p>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-val">6</div>
+            <div class="stat-label">STLC Phases</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">3</div>
+            <div class="stat-label">Testing Types</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">10</div>
+            <div class="stat-label">Process Steps</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">9</div>
+            <div class="stat-label">Automation Types</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 1: STLC ── -->
+    <section id="stlc">
+      <div class="container">
+        <div class="section-eyebrow">01 / STLC</div>
+        <h2>Software Testing Life Cycle</h2>
+        <p class="section-intro">
+          The STLC is a systematic process that verifies whether software
+          quality meets expectations — a fundamental part of the SDLC.
+        </p>
+
+        <div class="phases-grid">
+          <div class="phase-card">
+            <div class="phase-num">01</div>
+            <div class="phase-title">Requirement Analysis</div>
+            <div class="phase-obj">
+              Objective: Understand what needs to be tested
+            </div>
+            <ul class="phase-activities">
+              <li>Review Software Requirements Document (SRD)</li>
+              <li>Interview stakeholders to gather information</li>
+              <li>Identify ambiguities and inconsistencies</li>
+              <li>Identify potential risks impacting testing</li>
+            </ul>
+            <div class="deliverable">
+              Requirements Traceability Matrix (RTM)
+            </div>
+          </div>
+          <div class="phase-card">
+            <div class="phase-num">02</div>
+            <div class="phase-title">Test Planning</div>
+            <div class="phase-obj">
+              Objective: Create overall test strategy and plan
+            </div>
+            <ul class="phase-activities">
+              <li>Identify testing objectives and scope</li>
+              <li>Develop test strategy and methods</li>
+              <li>Identify environment and resources needed</li>
+              <li>Estimate time and cost</li>
+              <li>Assign roles and responsibilities</li>
+            </ul>
+            <div class="deliverable">Test Plan Document</div>
+          </div>
+          <div class="phase-card">
+            <div class="phase-num">03</div>
+            <div class="phase-title">Test Case Development</div>
+            <div class="phase-obj">Objective: Design detailed test cases</div>
+            <ul class="phase-activities">
+              <li>Write clear, concise test cases</li>
+              <li>Create test data and scenarios</li>
+              <li>Identify expected results for each case</li>
+              <li>Review and validate test cases</li>
+              <li>Update RTM</li>
+            </ul>
+            <div class="deliverable">Test Cases, Scripts, Test Data</div>
+          </div>
+          <div class="phase-card">
+            <div class="phase-num">04</div>
+            <div class="phase-title">Test Environment Setup</div>
+            <div class="phase-obj">
+              Objective: Define hardware, software, and network conditions
+            </div>
+            <ul class="phase-activities">
+              <li>Install and configure required software and tools</li>
+              <li>Set up servers, browsers, OS, and devices</li>
+              <li>Prepare access credentials and permissions</li>
+              <li>Validate environment before execution</li>
+            </ul>
+            <div class="deliverable">Test Environment Ready</div>
+          </div>
+          <div class="phase-card">
+            <div class="phase-num">05</div>
+            <div class="phase-title">Test Execution</div>
+            <div class="phase-obj">Objective: Execute prepared test cases</div>
+            <ul class="phase-activities">
+              <li>Run manual or automated test cases</li>
+              <li>Log defects with severity and priority</li>
+              <li>Perform defect retesting after fixes</li>
+              <li>Perform regression testing if required</li>
+              <li>Collect and analyze test results</li>
+            </ul>
+            <div class="deliverable">Execution Reports, Defect Reports</div>
+          </div>
+          <div class="phase-card">
+            <div class="phase-num">06</div>
+            <div class="phase-title">Test Closure</div>
+            <div class="phase-obj">
+              Objective: Complete and document all testing activities
+            </div>
+            <ul class="phase-activities">
+              <li>Prepare Test Summary Report</li>
+              <li>Ensure all defects are tracked and closed</li>
+              <li>Clean up test environment</li>
+              <li>Archive cases, data, and reports</li>
+              <li>Conduct retrospective for lessons learned</li>
+            </ul>
+            <div class="deliverable">Test Closure Report, Lessons Learned</div>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>STLC vs SDLC</span></div>
+
+        <div class="compare-vs">
+          <div class="vs-side sdlc">
+            <h4>SDLC</h4>
+            <div class="vs-row">
+              <span class="vs-key">Focus</span
+              ><span class="vs-val">Building the software</span>
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Team</span
+              ><span class="vs-val">Developers, BAs, PMs, QA team</span>
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Goal</span
+              ><span class="vs-val"
+                >Deliver working software meeting user requirements</span
+              >
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Scope</span
+              ><span class="vs-val">Entire software development lifecycle</span>
+            </div>
+          </div>
+          <div class="vs-label">VS</div>
+          <div class="vs-side stlc">
+            <h4>STLC</h4>
+            <div class="vs-row">
+              <span class="vs-key">Focus</span
+              ><span class="vs-val">Verifying and validating the software</span>
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Team</span
+              ><span class="vs-val">QA/Testing team primarily</span>
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Goal</span
+              ><span class="vs-val"
+                >Ensure product is defect-free and high quality</span
+              >
+            </div>
+            <div class="vs-row">
+              <span class="vs-key">Scope</span
+              ><span class="vs-val">Part of SDLC, focused only on testing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 2: MANUAL TESTING ── -->
+    <section id="manual">
+      <div class="container">
+        <div class="section-eyebrow">02 / Manual Testing</div>
+        <h2>Manual Testing</h2>
+        <p class="section-intro">
+          Manual testing involves a person actively using software to find bugs
+          and issues without automation tools — following predefined test cases.
+        </p>
+
+        <div class="types-layout">
+          <div class="type-card">
+            <div class="type-label black">Black Box</div>
+            <div class="type-desc">
+              Tests functionality without knowledge of internal code structure.
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Functional Testing</div>
+              <div class="sub-type-desc">
+                Verifies features work according to specified requirements and
+                checks if the system does what it's supposed to do.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Non-Functional Testing</div>
+              <div class="sub-type-desc">
+                Focuses on performance, usability, and quality aspects — not
+                directly related to specific functions.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Regression Testing</div>
+              <div class="sub-type-desc">
+                Done after code changes or bug fixes to verify new code doesn't
+                negatively impact existing features.
+              </div>
+            </div>
+          </div>
+          <div class="type-card">
+            <div class="type-label white">White Box</div>
+            <div class="type-desc">
+              Tests the internal structure of the system — designs and coding.
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Path Testing</div>
+              <div class="sub-type-desc">
+                Checks all possible execution paths and ensures each function
+                behaves as expected.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Security Testing</div>
+              <div class="sub-type-desc">
+                Finds security issues in code using static analysis and secure
+                development best practices.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Loop Testing</div>
+              <div class="sub-type-desc">
+                Checks that loops operate correctly and efficiently, preventing
+                infinite loops or logic flaws.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Data Flow Testing</div>
+              <div class="sub-type-desc">
+                Tracks flow of variables through the program — declaration,
+                initialization, and usage.
+              </div>
+            </div>
+          </div>
+          <div class="type-card">
+            <div class="type-label gray">Gray Box</div>
+            <div class="type-desc">
+              A combination of both white-box and black-box testing approaches.
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Partial Knowledge</div>
+              <div class="sub-type-desc">
+                Internal structure is partially known to the tester — provides a
+                balanced view.
+              </div>
+            </div>
+            <div class="sub-type">
+              <div class="sub-type-name">Dual Focus</div>
+              <div class="sub-type-desc">
+                Tests both internal structure and functionality simultaneously
+                for comprehensive coverage.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>10-Step Process</span></div>
+
+        <div class="timeline" id="manual-timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 01</div>
+            <div class="timeline-title">Understand Project Requirements</div>
+            <div class="timeline-content">
+              Study functional and non-functional requirements, review user
+              stories, and gather stakeholder input.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 02</div>
+            <div class="timeline-title">Create Test Plan</div>
+            <div class="timeline-content">
+              Define scope (what to test, what to exclude), set objectives, list
+              resources, and specify environments.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 03</div>
+            <div class="timeline-title">Design Test Cases</div>
+            <div class="timeline-content">
+              <ul>
+                <li>Test ID, Description, Preconditions</li>
+                <li>Step-by-step execution instructions</li>
+                <li>Expected Result, Postconditions</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 04</div>
+            <div class="timeline-title">Set Up Test Environment</div>
+            <div class="timeline-content">
+              Install applications, configure settings, ensure access to test
+              data, and verify hardware/software requirements.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 05</div>
+            <div class="timeline-title">Execute Test Cases</div>
+            <div class="timeline-content">
+              Follow test steps, record actual results, mark pass/fail status,
+              and note observations.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 06</div>
+            <div class="timeline-title">Log and Report Defects</div>
+            <div class="timeline-content">
+              <ul>
+                <li>Defect ID, Summary, Steps to reproduce</li>
+                <li>Actual vs. expected results</li>
+                <li>Severity (critical / major / minor), screenshots, logs</li>
+              </ul>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 07</div>
+            <div class="timeline-title">Track and Verify Defects</div>
+            <div class="timeline-content">
+              Monitor defect status, retest fixes, and update status (closed or
+              reopened).
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 08</div>
+            <div class="timeline-title">Conduct Regression Testing</div>
+            <div class="timeline-content">
+              Ensure defect fixes or changes haven't broken existing
+              functionality.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 09</div>
+            <div class="timeline-title">Prepare Test Closure Reports</div>
+            <div class="timeline-content">
+              Summarize testing activities, test results (passed/failed),
+              defects found/resolved, and lessons learned.
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step">STEP 10</div>
+            <div class="timeline-title">
+              Provide Feedback and Recommendations
+            </div>
+            <div class="timeline-content">
+              Analyze software quality, suggest process improvements, and
+              recommend future testing strategies.
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <span>Advantages &amp; Disadvantages</span>
+        </div>
+
+        <div class="proscons-grid">
+          <div class="pro-card">
+            <h4>✓ Advantages</h4>
+            <ul class="item-list">
+              <li>
+                Fast and accurate visual feedback — detects dynamically changing
+                GUI bugs
+              </li>
+              <li>
+                Less expensive — no high-level skills or specific tools required
+              </li>
+              <li>No coding required — easy to learn for new testers</li>
+              <li>Efficient for unplanned changes — adapts easily</li>
+              <li>Human intuition — testers can use judgment and creativity</li>
+              <li>Early testing — can start before full development</li>
+            </ul>
+          </div>
+          <div class="con-card">
+            <h4>✗ Disadvantages</h4>
+            <ul class="item-list">
+              <li>Less reliable — doesn't cover all testing aspects</li>
+              <li>
+                Cannot be reused — separate cases needed for each software
+              </li>
+              <li>Large human resources required</li>
+              <li>Needs experience — testers must know the application well</li>
+              <li>Time-consuming — large projects take significant time</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 3: AUTOMATION ── -->
+    <section id="automation">
+      <div class="container">
+        <div class="section-eyebrow">03 / Automation Testing</div>
+        <h2>Automation Testing</h2>
+        <p class="section-intro">
+          Automation testing uses special software tools to execute tests,
+          writing scripts to test software automatically — reducing (not
+          eliminating) manual effort.
+        </p>
+
+        <h3>Automation Types</h3>
+        <div class="comparison-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Unit Testing</td>
+                <td>
+                  Tests the smallest piece of code logically isolated in a
+                  system
+                </td>
+              </tr>
+              <tr>
+                <td>Integration Testing</td>
+                <td>Tests individual components combined as a group</td>
+              </tr>
+              <tr>
+                <td>Smoke Testing</td>
+                <td>
+                  Preliminary check to determine if software build is stable
+                </td>
+              </tr>
+              <tr>
+                <td>Performance Testing</td>
+                <td>Determines system performance under a particular load</td>
+              </tr>
+              <tr>
+                <td>Regression Testing</td>
+                <td>Confirms software still works after changes or fixes</td>
+              </tr>
+              <tr>
+                <td>Security Testing</td>
+                <td>Uncovers risks and vulnerabilities in the system</td>
+              </tr>
+              <tr>
+                <td>Acceptance Testing</td>
+                <td>Determines end users' approval of the software</td>
+              </tr>
+              <tr>
+                <td>API Testing</td>
+                <td>Validates API functionality, security, and reliability</td>
+              </tr>
+              <tr>
+                <td>UI Testing</td>
+                <td>Ensures all screen elements function as desired</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-divider"><span>Automation Frameworks</span></div>
+
+        <div class="fw-grid">
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 01</div>
+            <div class="fw-title">Linear Framework</div>
+            <div class="fw-desc">
+              Most basic form — record and playback. Testers create and execute
+              scripts for each test case. Suitable for small teams with limited
+              automation experience.
+            </div>
+          </div>
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 02</div>
+            <div class="fw-title">Modular-Based Framework</div>
+            <div class="fw-desc">
+              Organizes test cases into small independent modules, each with
+              different scenarios. All modules handled by a master script —
+              requires pre-planning.
+            </div>
+          </div>
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 03</div>
+            <div class="fw-title">Library Architecture</div>
+            <div class="fw-desc">
+              An expansion of the modular framework — tasks grouped into
+              functions by common objective, stored in libraries for quick
+              access and greater reusability.
+            </div>
+          </div>
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 04</div>
+            <div class="fw-title">Data-Driven Framework</div>
+            <div class="fw-desc">
+              Test data and scripts separated — allows testing with multiple
+              data sets without changing scripts. Increases test coverage
+              efficiently.
+            </div>
+          </div>
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 05</div>
+            <div class="fw-title">Keyword-Driven Framework</div>
+            <div class="fw-desc">
+              Uses keywords to describe actions. Non-technical team members can
+              write tests using action keywords without coding knowledge.
+            </div>
+          </div>
+          <div class="fw-card">
+            <div class="fw-num">FRAMEWORK 06</div>
+            <div class="fw-title">Hybrid Framework</div>
+            <div class="fw-desc">
+              Combines multiple frameworks to leverage benefits of each. Most
+              commonly used in real-world projects for maximum flexibility.
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <span>Advantages &amp; Disadvantages</span>
+        </div>
+
+        <div class="proscons-grid">
+          <div class="pro-card">
+            <h4>✓ Advantages</h4>
+            <ul class="item-list">
+              <li>Simplifies test case execution — can run unattended</li>
+              <li>Improves reliability — equal focus on all testing areas</li>
+              <li>Increases test coverage — more cases can be executed</li>
+              <li>Minimizes human interaction — no human error from neglect</li>
+              <li>Saves time and money in the long run</li>
+              <li>
+                Earlier defect detection — documents defects for easier fixing
+              </li>
+            </ul>
+          </div>
+          <div class="con-card">
+            <h4>✗ Disadvantages</h4>
+            <ul class="item-list">
+              <li>
+                High initial cost — requires time and money investment upfront
+              </li>
+              <li>
+                100% automation not possible — some tests require human
+                intervention
+              </li>
+              <li>Can't test user-friendliness, graphics, or sound</li>
+              <li>Programming knowledge required to write test scripts</li>
+              <li>
+                False positives and negatives — tests may incorrectly pass or
+                fail
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 4: COMPARISON ── -->
+    <section id="comparison">
+      <div class="container">
+        <div class="section-eyebrow">04 / Comparison</div>
+        <h2>Manual vs Automation</h2>
+        <p class="section-intro">
+          Choosing the right approach depends on project context. Here's a
+          comprehensive comparison to guide your decision.
+        </p>
+
+        <div class="comparison-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Manual Testing</th>
+                <th>Automation Testing</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Test Execution</td>
+                <td>Executed manually by QA testers</td>
+                <td>Executed automatically using tools and scripts</td>
+              </tr>
+              <tr>
+                <td>Efficiency</td>
+                <td>Less efficient and time-consuming</td>
+                <td>More efficient and less time-consuming</td>
+              </tr>
+              <tr>
+                <td>Test Coverage</td>
+                <td>Difficult to ensure 100% coverage</td>
+                <td>More test coverage can be ensured</td>
+              </tr>
+              <tr>
+                <td>Programming Knowledge</td>
+                <td>Not required — only product knowledge needed</td>
+                <td>Required to write test scripts</td>
+              </tr>
+              <tr>
+                <td>Reliability</td>
+                <td>Less reliable due to human error</td>
+                <td>More reliable — performed by tools/scripts</td>
+              </tr>
+              <tr>
+                <td>Investment</td>
+                <td>Heavy investment in human resources</td>
+                <td>Investment in tools rather than human resources</td>
+              </tr>
+              <tr>
+                <td>Regression Testing</td>
+                <td>May not catch all regression bugs</td>
+                <td>Effective for catching bugs due to code changes</td>
+              </tr>
+              <tr>
+                <td>Cost</td>
+                <td>Less expensive initially</td>
+                <td>Higher initial investment</td>
+              </tr>
+              <tr>
+                <td>Reusability</td>
+                <td>Cannot be reused easily</td>
+                <td>Can be reused for multiple test cycles</td>
+              </tr>
+              <tr>
+                <td>Human Resources</td>
+                <td>Requires numerous human resources</td>
+                <td>Requires fewer human resources</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-divider"><span>When to Use Each</span></div>
+
+        <div class="when-grid">
+          <div class="when-card when-manual">
+            <h3>Use Manual Testing</h3>
+            <ul class="when-list">
+              <li>Exploratory testing</li>
+              <li>Usability testing</li>
+              <li>Ad-hoc testing</li>
+              <li>New feature testing (one-time)</li>
+              <li>UI/UX testing</li>
+              <li>Small projects with limited budget</li>
+              <li>Testing requiring human judgment</li>
+            </ul>
+          </div>
+          <div class="when-card when-auto">
+            <h3>Use Automation Testing</h3>
+            <ul class="when-list">
+              <li>Regression testing</li>
+              <li>Load/Performance testing</li>
+              <li>Repetitive test cases</li>
+              <li>Data-driven testing</li>
+              <li>Large projects with frequent releases</li>
+              <li>Smoke testing</li>
+              <li>Cross-browser/platform testing</li>
+              <li>Agile/DevOps environments</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 5: TOOLS ── -->
+    <section id="tools">
+      <div class="container">
+        <div class="section-eyebrow">05 / Tools</div>
+        <h2>Testing Tools</h2>
+        <p class="section-intro">
+          The right tools amplify testing effectiveness. Here are the essential
+          tools across manual and automation testing.
+        </p>
+
+        <h3>Manual Testing Tools</h3>
+        <div class="tools-grid">
+          <div class="tool-card">
+            <div class="tool-name">TestLink</div>
+            <div class="tool-desc">
+              Web-based test management with cross-browser testing and
+              record/playback capabilities.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Bugzilla</div>
+            <div class="tool-desc">
+              Bug tracking system with advanced search and multiple format bug
+              reporting.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Jira</div>
+            <div class="tool-desc">
+              Task management and bug tracking with agile support — track,
+              assign, and report bugs efficiently.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">LoadRunner</div>
+            <div class="tool-desc">
+              Performance testing — categorize performance problems and simulate
+              user behavior under load.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Apache JMeter</div>
+            <div class="tool-desc">
+              Open-source load testing tool that simulates various loads and
+              generates performance reports.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Perfecto</div>
+            <div class="tool-desc">
+              Mobile UI testing across various device screen resolutions with
+              real device experience.
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Automation Tools</span></div>
+
+        <div class="tools-grid">
+          <div class="tool-card">
+            <div class="tool-name">Selenium</div>
+            <div class="tool-desc">
+              Automated regression testing with playback/recording and support
+              for multiple programming languages.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">QTP / UFT</div>
+            <div class="tool-desc">
+              Automated functional testing for web and desktop applications
+              using VB scripting.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Sikuli</div>
+            <div class="tool-desc">
+              GUI-based automation using screenshots — automate anything visible
+              on screen.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">Appium</div>
+            <div class="tool-desc">
+              Open-source tool for mobile app testing on iOS, Android, and
+              Windows platforms.
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-name">JMeter</div>
+            <div class="tool-desc">
+              Open-source load testing for functional behavior and performance
+              measurement.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 6: BEST PRACTICES ── -->
+    <section id="bestpractices">
+      <div class="container">
+        <div class="section-eyebrow">06 / Best Practices</div>
+        <h2>Best Practices</h2>
+        <p class="section-intro">
+          Proven practices that separate professional testing from ad-hoc
+          efforts.
+        </p>
+
+        <div class="when-grid">
+          <div class="when-card when-auto">
+            <h3>Automation Best Practices</h3>
+            <ul class="when-list">
+              <li>Plan self-contained, clearly defined test cases</li>
+              <li>
+                Plan execution order — one test creates state for the next
+              </li>
+              <li>Use tools with automatic scheduling capabilities</li>
+              <li>Set up alarms for test failures to decide continue/abort</li>
+              <li>Continuously reassess test plans as application evolves</li>
+            </ul>
+          </div>
+          <div class="when-card when-manual">
+            <h3>Manual Best Practices</h3>
+            <ul class="when-list">
+              <li>Understand requirements thoroughly before starting</li>
+              <li>Create comprehensive test cases — positive and negative</li>
+              <li>Maintain and update test documentation throughout</li>
+              <li>Perform regression testing after every change</li>
+              <li>Communicate effectively with regular team updates</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>What to Automate?</span></div>
+
+        <div class="matrix-grid">
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">
+              Monotonous tests — repeatable and reusable
+            </div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">
+              Tests requiring multiple data sets
+            </div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">
+              Business critical, high-risk test cases
+            </div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">
+              Determinant tests — easy pass/fail logic
+            </div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">Tedious, repetitive action tests</div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">Exploratory, unscripted testing</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">Visual regression UI comparisons</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">
+              User experience and usability assessment
+            </div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 7: IMPLEMENTATION ── -->
+    <section id="implementation">
+      <div class="container">
+        <div class="section-eyebrow">07 / Implementation</div>
+        <h2>Project Implementation</h2>
+        <p class="section-intro">
+          A structured four-phase strategy for applying testing in real-world
+          projects.
+        </p>
+
+        <div class="impl-phases">
+          <div class="impl-card">
+            <div class="impl-phase-num">PHASE 01 — ASSESSMENT</div>
+            <h4>Initial Assessment</h4>
+            <ul class="impl-steps">
+              <li><span>1</span>Analyze project requirements</li>
+              <li><span>2</span>Identify testing objectives</li>
+              <li><span>3</span>Evaluate budget and resources</li>
+              <li>
+                <span>4</span>Choose testing approach (manual, automated, or
+                hybrid)
+              </li>
+            </ul>
+          </div>
+          <div class="impl-card">
+            <div class="impl-phase-num">PHASE 02 — PLANNING</div>
+            <h4>Strategic Planning</h4>
+            <ul class="impl-steps">
+              <li><span>1</span>Create test plan</li>
+              <li><span>2</span>Define scope and objectives</li>
+              <li><span>3</span>Select tools and frameworks</li>
+              <li><span>4</span>Allocate resources and timeline</li>
+            </ul>
+          </div>
+          <div class="impl-card">
+            <div class="impl-phase-num">PHASE 03 — EXECUTION</div>
+            <h4>Test Execution</h4>
+            <ul class="impl-steps">
+              <li><span>1</span>Set up test environment</li>
+              <li><span>2</span>Develop test cases</li>
+              <li><span>3</span>Execute tests (manual and/or automated)</li>
+              <li><span>4</span>Log and track defects</li>
+            </ul>
+          </div>
+          <div class="impl-card">
+            <div class="impl-phase-num">PHASE 04 — CLOSURE</div>
+            <h4>Reporting &amp; Closure</h4>
+            <ul class="impl-steps">
+              <li><span>1</span>Analyze test results</li>
+              <li><span>2</span>Prepare test summary reports</li>
+              <li><span>3</span>Conduct retrospective</li>
+              <li><span>4</span>Document lessons learned</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <span>Quick Reference Checklist</span>
+        </div>
+
+        <div class="checklist">
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Requirement Analysis Complete
+          </div>
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Test Plan Created
+          </div>
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Test Cases Developed
+          </div>
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Test Environment Set Up
+          </div>
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Test Execution Done
+          </div>
+          <div class="check-item">
+            <div class="check-box">☐</div>
+            Test Closure Completed
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Decision Matrix</span></div>
+
+        <div class="matrix-grid">
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">First-time feature testing</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">Regression testing</div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">UI/UX evaluation</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">Performance testing</div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">Exploratory testing</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">Smoke testing</div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+          <div class="matrix-item manual">
+            <div class="matrix-scenario">User acceptance testing</div>
+            <div class="matrix-tag">Manual</div>
+          </div>
+          <div class="matrix-item auto">
+            <div class="matrix-scenario">Load testing</div>
+            <div class="matrix-tag">Automate</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section class="conclusion">
+      <div class="container">
+        <div class="conclusion-box">
+          <div class="section-eyebrow">Conclusion</div>
+          <h2>The Balanced Approach</h2>
+          <p>
+            Effective software testing requires combining both manual and
+            automation methodologies. The STLC provides a structured framework,
+            while knowing when to use each approach optimizes resources and
+            improves software quality.
+          </p>
+          <ul class="takeaway-list">
+            <li>Follow STLC phases systematically</li>
+            <li>Use manual testing for exploratory and usability scenarios</li>
+            <li>Implement automation for regression and repetitive tests</li>
+            <li>Select tools based on project requirements and budget</li>
+            <li>Continuously improve through retrospectives</li>
+            <li>Maintain comprehensive documentation throughout</li>
+            <li>Communicate effectively with all stakeholders</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        Software Testing: Comprehensive Guide for Real-Time Projects
+        &nbsp;·&nbsp; Based on GeeksforGeeks Resources
+      </div>
+    </footer>
+
+    <script>
+      // Intersection Observer for section animations
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.05 },
+      );
+
+      document.querySelectorAll("section").forEach((s) => observer.observe(s));
+
+      // Timeline items
+      const tlObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+              setTimeout(() => entry.target.classList.add("visible"), i * 80);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+
+      document
+        .querySelectorAll(".timeline-item")
+        .forEach((item) => tlObserver.observe(item));
+
+      // Active nav highlighting
+      const sections = document.querySelectorAll("section[id]");
+      const navLinks = document.querySelectorAll(".toc-item");
+
+      const navObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              navLinks.forEach((link) => (link.style.color = ""));
+              const active = document.querySelector(
+                `.toc-item[href="#${entry.target.id}"]`,
+              );
+              if (active) active.style.color = "var(--accent)";
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+
+      sections.forEach((s) => navObserver.observe(s));
+
+      // Smooth scroll with offset for TOC links
+      document.querySelector(".toc-inner").addEventListener("click", (e) => {
+        const link = e.target.closest(".toc-item");
+        if (!link) return;
+
+        const href = link.getAttribute("href");
+        if (href.startsWith("#")) {
+          e.preventDefault();
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+
+          if (targetElement) {
+            const navHeight = document.querySelector(".toc").offsetHeight;
+            const targetPosition =
+              targetElement.getBoundingClientRect().top +
+              window.pageYOffset -
+              navHeight;
+
+            window.scrollTo({
+              top: targetPosition,
+              behavior: "smooth",
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
