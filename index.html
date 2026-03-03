@@ -10711,22 +10711,44 @@
           }
         });
 
-        // Desktop: scroll tracking via .main
-        main.addEventListener("scroll", () => {
+        // ── Scroll position preservation ──────────────────────────────
+        window.addEventListener("load", () => {
+          const savedPos = localStorage.getItem("sf_qa_scroll_pos");
+          if (savedPos) {
+            const pos = parseInt(savedPos, 10);
+            if (window.innerWidth > 1024) {
+              main.scrollTop = pos;
+            } else {
+              window.scrollTo(0, pos);
+            }
+          }
+        });
+
+        const saveScrollPos = () => {
+          const pos = window.innerWidth > 1024 ? main.scrollTop : window.scrollY;
+          localStorage.setItem("sf_qa_scroll_pos", pos);
+        };
+
+        let scrollTimeout;
+        const handleScroll = () => {
+          // Update UI
           if (window.innerWidth > 1024) {
             updateProgress();
             updateActiveNav();
-          }
-        });
-        // Mobile/tablet: track window scroll
-        window.addEventListener("scroll", () => {
-          if (window.innerWidth <= 1024) {
+          } else {
             const docH = document.documentElement.scrollHeight - window.innerHeight;
             const pct = docH > 0 ? Math.min(100, (window.scrollY / docH) * 100) : 0;
             progressBar.style.width = pct.toFixed(2) + "%";
             progressLabel.textContent = pct.toFixed(0) + "%";
           }
-        });
+
+          // Save position (debounced)
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(saveScrollPos, 100);
+        };
+
+        main.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll);
 
         updateProgress();
         updateActiveNav();
