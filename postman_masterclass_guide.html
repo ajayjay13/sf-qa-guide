@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Postman Masterclass — The Complete Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --surface: #111520;
+      --surface2: #161c2d;
+      --border: #1e2940;
+      --border2: #2a3550;
+      --accent: #ff6b35;
+      --accent2: #ff9f1c;
+      --blue: #4d9de0;
+      --green: #11b386;
+      --purple: #8b5cf6;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --code-bg: #0d1117;
+      --glow: rgba(255,107,53,0.15);
+      --glow2: rgba(77,157,224,0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(255,107,53,0.3);
+    }
+
+    .logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      line-height: 1.2;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-search {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 12px 7px 32px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .sidebar-search input:focus { border-color: var(--accent); }
+    .sidebar-search input::placeholder { color: var(--text3); }
+    
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 12px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 12px 0; }
+
+    .nav-section {
+      margin-bottom: 4px;
+    }
+
+    .nav-section-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 8px 16px 4px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+      text-decoration: none;
+      color: var(--text2);
+      font-size: 13px;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-left-color: var(--border2);
+    }
+
+    .nav-item.active {
+      background: rgba(255,107,53,0.08);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .nav-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--border2);
+      flex-shrink: 0;
+    }
+
+    .nav-item.active .nav-dot { background: var(--accent); }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .progress-bar-wrap {
+      background: var(--surface2);
+      border-radius: 4px;
+      height: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      padding: 80px 60px 60px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-glow2 {
+      position: absolute;
+      bottom: -50px;
+      left: 200px;
+      width: 400px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(77,157,224,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.25);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 .accent { color: var(--accent); }
+    .hero h1 .dim { color: var(--text3); }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text2);
+      max-width: 600px;
+      margin-bottom: 36px;
+      line-height: 1.8;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stat-value .unit { font-size: 14px; color: var(--text3); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Content ── */
+    .content {
+      max-width: 900px;
+      padding: 48px 60px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 72px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 4px;
+      padding: 3px 8px;
+      flex-shrink: 0;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: var(--text3);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── Cards ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--card-accent, var(--accent)), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* ── Method badges ── */
+    .method-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .GET { background: rgba(17,179,134,0.12); color: var(--green); border: 1px solid rgba(17,179,134,0.25); }
+    .POST { background: rgba(255,159,28,0.12); color: var(--accent2); border: 1px solid rgba(255,159,28,0.25); }
+    .PATCH { background: rgba(77,157,224,0.12); color: var(--blue); border: 1px solid rgba(77,157,224,0.25); }
+    .DELETE { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+
+    /* ── Endpoint table ── */
+    .endpoint-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+
+    .endpoint-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .endpoint-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .endpoint-table tr:last-child td { border-bottom: none; }
+
+    .endpoint-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .endpoint-url {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--blue);
+    }
+
+    /* ── Code blocks ── */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .code-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .code-lang {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .copy-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      color: var(--text3);
+      font-size: 11px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    pre {
+      padding: 20px;
+      overflow-x: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #e2e8f0;
+    }
+
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .fn { color: #82aaff; }
+    .cm { color: #546e7a; font-style: italic; }
+    .num { color: #f78c6c; }
+    .var { color: #ffcb6b; }
+    .op { color: #89ddff; }
+    .prop { color: #80cbc4; }
+
+    /* ── Info boxes ── */
+    .info-box {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-left: 3px solid;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .info-box-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+
+    .info-box.tip {
+      background: rgba(17,179,134,0.07);
+      border-color: var(--green);
+    }
+
+    .info-box.tip .info-box-icon::before { content: '💡'; }
+
+    .info-box.warning {
+      background: rgba(255,159,28,0.07);
+      border-color: var(--accent2);
+    }
+
+    .info-box.warning .info-box-icon::before { content: '⚠️'; }
+
+    .info-box.info {
+      background: rgba(77,157,224,0.07);
+      border-color: var(--blue);
+    }
+
+    .info-box.info .info-box-icon::before { content: 'ℹ️'; }
+
+    .info-box.danger {
+      background: rgba(239,68,68,0.07);
+      border-color: var(--red);
+    }
+
+    .info-box.danger .info-box-icon::before { content: '🚫'; }
+
+    .info-box-content strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .info-box-content p, .info-box-content { color: var(--text2); font-size: 13px; }
+
+    /* ── Concept pills ── */
+    .pill-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+
+    .pill {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: var(--text2);
+      font-family: 'DM Mono', monospace;
+      transition: all 0.15s;
+    }
+
+    .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Steps ── */
+    .steps { margin: 24px 0; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      bottom: -8px;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .step-content { padding-top: 4px; flex: 1; }
+    .step-title { font-weight: 600; color: var(--text); margin-bottom: 4px; font-size: 14px; }
+    .step-desc { font-size: 13px; color: var(--text2); }
+
+    /* ── Status codes ── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      transition: all 0.15s;
+    }
+
+    .status-card:hover { border-color: var(--border2); }
+
+    .status-code {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .status-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+    .status-desc { font-size: 11px; color: var(--text3); }
+
+    .s2xx .status-code { color: var(--green); }
+    .s4xx .status-code { color: var(--accent2); }
+    .s5xx .status-code { color: var(--red); }
+
+    /* ── Variable scope diagram ── */
+    .scope-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scope-layer {
+      border: 1px dashed;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .scope-layer:last-child { margin-bottom: 0; }
+
+    .scope-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .scope-desc { font-size: 12px; color: var(--text3); }
+    .scope-api { font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 4px; }
+
+    .scope-global { border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.04); }
+    .scope-global .scope-label { color: var(--purple); }
+    .scope-env { border-color: rgba(77,157,224,0.3); background: rgba(77,157,224,0.04); }
+    .scope-env .scope-label { color: var(--blue); }
+    .scope-col { border-color: rgba(17,179,134,0.3); background: rgba(17,179,134,0.04); }
+    .scope-col .scope-label { color: var(--green); }
+    .scope-local { border-color: rgba(255,107,53,0.3); background: rgba(255,107,53,0.04); }
+    .scope-local .scope-label { color: var(--accent); }
+
+    /* ── Inline code ── */
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border2);
+      border-radius: 3px;
+      padding: 1px 6px;
+      color: #c792ea;
+    }
+
+    /* ── Text styles ── */
+    h2 { font-family: 'Space Mono', monospace; font-size: 18px; color: var(--text); margin: 32px 0 16px; }
+    h3 { font-size: 15px; font-weight: 600; color: var(--text); margin: 24px 0 12px; }
+    p { color: var(--text2); margin-bottom: 16px; font-size: 14px; }
+    
+    ul, ol { padding-left: 20px; margin-bottom: 16px; }
+    li { color: var(--text2); font-size: 13px; margin-bottom: 6px; line-height: 1.6; }
+    li strong { color: var(--text); }
+
+    /* ── Tab navigation ── */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text3);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover { color: var(--text2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Cheatsheet grid ── */
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .cheat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .cheat-card-header {
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .cheat-card pre {
+      padding: 14px 16px;
+      font-size: 12px;
+      line-height: 1.7;
+      background: none;
+    }
+
+    /* ── Roadmap ── */
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .roadmap-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .roadmap-item::after {
+      content: attr(data-level);
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.03);
+    }
+
+    .roadmap-level {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .roadmap-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .roadmap-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .rtag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+
+    .l1 .rtag { background: rgba(17,179,134,0.08); color: var(--green); border-color: rgba(17,179,134,0.2); }
+    .l2 .rtag { background: rgba(77,157,224,0.08); color: var(--blue); border-color: rgba(77,157,224,0.2); }
+    .l3 .rtag { background: rgba(255,159,28,0.08); color: var(--accent2); border-color: rgba(255,159,28,0.2); }
+    .l4 .rtag { background: rgba(139,92,246,0.08); color: var(--purple); border-color: rgba(139,92,246,0.2); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 48px 0;
+    }
+
+    /* ── Mobile hamburger ── */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 200;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    @media (max-width: 900px) {
+      .hamburger { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .hero, .content { padding-left: 24px; padding-right: 24px; }
+      .hero { padding-top: 60px; }
+      .roadmap { grid-template-columns: 1fr; }
+    }
+
+    /* ── Animations on scroll ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">PM</div>
+      <div>
+        <div class="logo-text">POSTMAN</div>
+        <div class="logo-sub">Masterclass Guide</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="search-wrapper">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Search topics..." id="searchInput" oninput="filterNav(this.value)" />
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section">
+      <div class="nav-section-title">Getting Started</div>
+      <a class="nav-item active" href="#intro" onclick="setActive(this)"><span class="nav-dot"></span>Introduction</a>
+      <a class="nav-item" href="#install" onclick="setActive(this)"><span class="nav-dot"></span>Installation</a>
+      <a class="nav-item" href="#first-request" onclick="setActive(this)"><span class="nav-dot"></span>First Request</a>
+      <a class="nav-item" href="#http" onclick="setActive(this)"><span class="nav-dot"></span>HTTP Protocol</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Core Concepts</div>
+      <a class="nav-item" href="#collections" onclick="setActive(this)"><span class="nav-dot"></span>Collections & Variables</a>
+      <a class="nav-item" href="#requests" onclick="setActive(this)"><span class="nav-dot"></span>Request Types</a>
+      <a class="nav-item" href="#auth" onclick="setActive(this)"><span class="nav-dot"></span>Authentication</a>
+      <a class="nav-item" href="#status-codes" onclick="setActive(this)"><span class="nav-dot"></span>Status Codes</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Test Automation</div>
+      <a class="nav-item" href="#testing" onclick="setActive(this)"><span class="nav-dot"></span>Writing Tests</a>
+      <a class="nav-item" href="#assertions" onclick="setActive(this)"><span class="nav-dot"></span>Assertions</a>
+      <a class="nav-item" href="#variables-scope" onclick="setActive(this)"><span class="nav-dot"></span>Variable Scopes</a>
+      <a class="nav-item" href="#data-extraction" onclick="setActive(this)"><span class="nav-dot"></span>Data Extraction</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Advanced</div>
+      <a class="nav-item" href="#collection-runner" onclick="setActive(this)"><span class="nav-dot"></span>Collection Runner</a>
+      <a class="nav-item" href="#newman" onclick="setActive(this)"><span class="nav-dot"></span>Newman CLI</a>
+      <a class="nav-item" href="#cicd" onclick="setActive(this)"><span class="nav-dot"></span>CI/CD Integration</a>
+      <a class="nav-item" href="#schema" onclick="setActive(this)"><span class="nav-dot"></span>Schema Validation</a>
+      <a class="nav-item" href="#mocks" onclick="setActive(this)"><span class="nav-dot"></span>Mock Servers</a>
+      <a class="nav-item" href="#cheatsheet" onclick="setActive(this)"><span class="nav-dot"></span>Cheatsheet</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Reference</div>
+      <a class="nav-item" href="#api-ref" onclick="setActive(this)"><span class="nav-dot"></span>Simple Books API</a>
+      <a class="nav-item" href="#dynamic-vars" onclick="setActive(this)"><span class="nav-dot"></span>Dynamic Variables</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="progress-label">
+      <span>Reading Progress</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Complete Reference Guide · v2.0</div>
+      <h1>
+        The Complete<br>
+        <span class="accent">Postman</span> <span class="dim">Masterclass</span>
+      </h1>
+      <p class="hero-desc">
+        From your first API request to full CI/CD integration. Everything you need to know about API testing, test automation, and team workflows — all in one place.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-value">31 <span class="unit">lessons</span></div>
+          <div class="stat-label">Structured Learning</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">4 <span class="unit">units</span></div>
+          <div class="stat-label">Progressive Depth</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">~6 <span class="unit">hrs</span></div>
+          <div class="stat-label">Estimated Study Time</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">100<span class="unit">%</span></div>
+          <div class="stat-label">Hands-On Practice</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- INTRO -->
+    <section class="section reveal" id="intro">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <div>
+          <div class="section-title">What is Postman?</div>
+          <div class="section-subtitle">Understanding the tool and its ecosystem</div>
+        </div>
+      </div>
+
+      <p>Postman is a tool that allows you to easily work with APIs by building and sending HTTP requests to servers. It started as a Chrome extension but evolved into a full-featured standalone platform for API development, testing, and collaboration.</p>
+
+      <div class="cards-grid">
+        <div class="card" style="--card-accent: var(--accent);">
+          <div class="card-icon" style="background: rgba(255,107,53,0.1);">🚀</div>
+          <div class="card-title">API Testing</div>
+          <div class="card-desc">Send HTTP requests, inspect responses, and validate API behavior manually or automatically.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--blue);">
+          <div class="card-icon" style="background: rgba(77,157,224,0.1);">⚡</div>
+          <div class="card-title">Automation</div>
+          <div class="card-desc">Write JavaScript tests that run after each response. Automate entire test suites with the Collection Runner.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--green);">
+          <div class="card-icon" style="background: rgba(17,179,134,0.1);">🤝</div>
+          <div class="card-title">Collaboration</div>
+          <div class="card-desc">Share collections, fork workspaces, and create pull requests — like GitHub for API collections.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--purple);">
+          <div class="card-icon" style="background: rgba(139,92,246,0.1);">🔧</div>
+          <div class="card-title">CI/CD Integration</div>
+          <div class="card-desc">Run collections in pipelines using Newman CLI or the Postman CLI with GitHub Actions, Jenkins, and more.</div>
+        </div>
+      </div>
+
+      <div class="info-box warning">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Deprecated: Chrome Extension</strong>
+          Do NOT use the Google Chrome extension for Postman — it is no longer updated and lacks modern features. Use the standalone app or the web version at go.postman.co.
+        </div>
+      </div>
+
+      <h3>What Postman is NOT</h3>
+      <ul>
+        <li>❌ Not a UI testing tool — can't click buttons or fill out forms</li>
+        <li>❌ Not a performance/load testing tool</li>
+        <li>⚠️ Not designed for security testing (though possible)</li>
+        <li>✅ Perfect for functional API testing and automation</li>
+      </ul>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- INSTALL -->
+    <section class="section reveal" id="install">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <div>
+          <div class="section-title">Installation & Setup</div>
+          <div class="section-subtitle">Getting Postman running on your machine</div>
+        </div>
+      </div>
+
+      <div class="cards-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="card" style="--card-accent: var(--blue);">
+          <div class="card-icon" style="background: rgba(77,157,224,0.1);">🖥️</div>
+          <div class="card-title">Standalone App</div>
+          <div class="card-desc">Available for Windows, macOS, and Linux. Download from postman.com/downloads</div>
+        </div>
+        <div class="card" style="--card-accent: var(--green);">
+          <div class="card-icon" style="background: rgba(17,179,134,0.1);">🌐</div>
+          <div class="card-title">Web Browser</div>
+          <div class="card-desc">Works from any browser at go.postman.co. May need the Desktop Agent if requests fail.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--purple);">
+          <div class="card-icon" style="background: rgba(139,92,246,0.1);">🤖</div>
+          <div class="card-title">Desktop Agent</div>
+          <div class="card-desc">Required for web version to bypass browser security restrictions. Download separately.</div>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Recommendation</strong>
+          For the best experience, use the standalone desktop app. It requires no agent and has full feature parity.
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FIRST REQUEST -->
+    <section class="section reveal" id="first-request">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <div>
+          <div class="section-title">Your First Request</div>
+          <div class="section-subtitle">Building and sending HTTP requests</div>
+        </div>
+      </div>
+
+      <p>Work in Postman is organized in <strong>Workspaces</strong>. Each workspace can contain collections of requests.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Create a Workspace</div>
+            <div class="step-desc">Go to Workspaces → Create Workspace. Choose Personal for solo work or Team for collaboration.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Open a New Request Tab</div>
+            <div class="step-desc">Click the <code>+</code> button to open a new request. Select the HTTP method and enter the URL.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Send the Request</div>
+            <div class="step-desc">Click <strong>Send</strong>. View the response body, headers, and status code in the response panel below.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Check the Status Code</div>
+            <div class="step-desc">A <code>200 OK</code> or any <code>2XX</code> code means success. Read the API documentation to know what to expect.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- HTTP -->
+    <section class="section reveal" id="http">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <div>
+          <div class="section-title">HTTP Protocol</div>
+          <div class="section-subtitle">How requests and responses work</div>
+        </div>
+      </div>
+
+      <p>All APIs use HTTPS — Hypertext Transfer Protocol Secure. HTTPS ensures the connection is encrypted via SSL/TLS. From a testing perspective, HTTP and HTTPS behave identically.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0;">
+        <div class="card" style="--card-accent: var(--blue);">
+          <div class="card-title" style="color: var(--blue); margin-bottom: 12px;">📤 HTTP Request</div>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px; font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">URL</span> <span style="color: var(--text2);">The endpoint address</span></li>
+            <li style="margin-bottom: 8px; font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Method</span> <span style="color: var(--text2);">GET, POST, PUT, PATCH, DELETE</span></li>
+            <li style="margin-bottom: 8px; font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Headers</span> <span style="color: var(--text2);">Metadata like Authorization</span></li>
+            <li style="font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Body</span> <span style="color: var(--text2);">Data payload (for POST, PATCH)</span></li>
+          </ul>
+        </div>
+        <div class="card" style="--card-accent: var(--green);">
+          <div class="card-title" style="color: var(--green); margin-bottom: 12px;">📥 HTTP Response</div>
+          <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 8px; font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Status</span> <span style="color: var(--text2);">200, 201, 400, 404, 500...</span></li>
+            <li style="margin-bottom: 8px; font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Headers</span> <span style="color: var(--text2);">Content-Type, Cache-Control...</span></li>
+            <li style="font-size: 13px;"><span style="color: var(--accent); font-family: 'DM Mono', monospace; margin-right: 8px;">Body</span> <span style="color: var(--text2);">JSON, XML, HTML, plain text</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- COLLECTIONS -->
+    <section class="section reveal" id="collections">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <div>
+          <div class="section-title">Collections & Variables</div>
+          <div class="section-subtitle">Organizing requests and managing dynamic data</div>
+        </div>
+      </div>
+
+      <p>A <strong>Collection</strong> is a group of saved API requests. Typically you'll have one collection per API. Collections can be shared, forked, versioned, and run as a complete test suite.</p>
+
+      <h3>Using Variables</h3>
+      <p>Variables let you avoid repeating the same values and make changes centrally. Reference them with double curly braces: <code>{{variableName}}</code></p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">URL with Variables</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="cm">// Base URL stored as collection variable: baseUrl = https://simple-books-api.click</span>
+<span class="str">{{baseUrl}}</span><span class="op">/</span><span class="prop">books</span>              <span class="cm">→ https://simple-books-api.click/books</span>
+<span class="str">{{baseUrl}}</span><span class="op">/</span><span class="prop">books?type=fiction</span>   <span class="cm">→ filtered request</span>
+<span class="str">{{baseUrl}}</span><span class="op">/</span><span class="prop">books/:bookId</span>        <span class="cm">→ path variable</span></pre>
+      </div>
+
+      <h3>Initial Value vs Current Value</h3>
+      <div class="cards-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="card" style="--card-accent: var(--accent2);">
+          <div class="card-title">📤 Initial Value</div>
+          <div class="card-desc">Shared when you export or publish the collection. <strong>Never put secrets here</strong> — it's visible to anyone with access to the collection.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--green);">
+          <div class="card-title">🔒 Current Value</div>
+          <div class="card-desc">Private to you. This is the value Postman actually uses when running requests. Safe for tokens and sensitive data.</div>
+        </div>
+      </div>
+
+      <h3>Query Parameters</h3>
+      <p>Query parameters start after <code>?</code> in the URL and are formatted as <code>key=value</code> pairs joined with <code>&</code>.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Query Parameters</span>
+        </div>
+        <pre><span class="cm">// Single parameter</span>
+<span class="str">{{baseUrl}}/books?type=fiction</span>
+
+<span class="cm">// Multiple parameters (joined with &)</span>
+<span class="str">{{baseUrl}}/books?type=non-fiction&limit=5</span>
+
+<span class="cm">// Path variable (bookId is dynamic)</span>
+<span class="str">{{baseUrl}}/books/:bookId</span>   <span class="cm">→ e.g. /books/3</span></pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- REQUESTS -->
+    <section class="section reveal" id="requests">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <div>
+          <div class="section-title">HTTP Methods</div>
+          <div class="section-subtitle">GET, POST, PATCH, DELETE and when to use them</div>
+        </div>
+      </div>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Purpose</th>
+            <th>Has Body?</th>
+            <th>Typical Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td>Retrieve data</td>
+            <td>No</td>
+            <td><code>200 OK</code></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge POST">POST</span></td>
+            <td>Create new resource</td>
+            <td>Yes (JSON)</td>
+            <td><code>201 Created</code></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge PATCH">PATCH</span></td>
+            <td>Partial update to existing resource</td>
+            <td>Yes (JSON)</td>
+            <td><code>204 No Content</code></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge DELETE">DELETE</span></td>
+            <td>Delete a resource</td>
+            <td>No (empty)</td>
+            <td><code>204 No Content</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box info">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>JSON Body Format</strong>
+          For POST and PATCH requests, set Body → Raw → JSON. Use double quotes for strings, no quotes for numbers and booleans, and commas between key-value pairs.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">JSON Request Bodies</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="cm">// POST /orders — Create a new order</span>
+{
+  <span class="str">"bookId"</span><span class="op">:</span> <span class="num">1</span>,
+  <span class="str">"customerName"</span><span class="op">:</span> <span class="str">"John Doe"</span>
+}
+
+<span class="cm">// PATCH /orders/:orderId — Update customer name</span>
+{
+  <span class="str">"customerName"</span><span class="op">:</span> <span class="str">"Jane Doe"</span>
+}
+
+<span class="cm">// POST /api-clients — Register for a token</span>
+{
+  <span class="str">"clientName"</span><span class="op">:</span> <span class="str">"MyClient"</span>,
+  <span class="str">"clientEmail"</span><span class="op">:</span> <span class="str">"me@example.com"</span>
+}</pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- AUTH -->
+    <section class="section reveal" id="auth">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <div>
+          <div class="section-title">Authentication</div>
+          <div class="section-subtitle">API tokens, Bearer auth, and managing credentials</div>
+        </div>
+      </div>
+
+      <p>Some API endpoints are public (no auth needed). Protected endpoints require an <strong>access token</strong> — a temporary password generated by the API after registration.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Register an API Client</div>
+            <div class="step-desc">Send <code>POST /api-clients</code> with your <code>clientName</code> and <code>clientEmail</code>. The response contains your access token.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Store the Token Securely</div>
+            <div class="step-desc">Save the token in the <strong>Current Value</strong> of a collection variable (e.g., <code>accessToken</code>). Never put it in Initial Value.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Add Authorization Header</div>
+            <div class="step-desc">In the Authorization tab, choose Bearer Token and enter <code>{{accessToken}}</code>. Or add manually: <code>Authorization: Bearer {{accessToken}}</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Authorization Header</span>
+        </div>
+        <pre><span class="cm">// Manual header format</span>
+<span class="prop">Authorization</span><span class="op">:</span> Bearer <span class="str">{{accessToken}}</span>
+
+<span class="cm">// Status 409 = already registered, use a different email</span>
+<span class="cm">// Status 401 = missing or invalid token</span>
+<span class="cm">// Token is valid for 7 days</span></pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- STATUS CODES -->
+    <section class="section reveal" id="status-codes">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <div>
+          <div class="section-title">HTTP Status Codes</div>
+          <div class="section-subtitle">Understanding what the server is telling you</div>
+        </div>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-card s2xx">
+          <div class="status-code">200</div>
+          <div class="status-name" style="color: var(--green);">OK</div>
+          <div class="status-desc">Request succeeded. Data returned.</div>
+        </div>
+        <div class="status-card s2xx">
+          <div class="status-code">201</div>
+          <div class="status-name" style="color: var(--green);">Created</div>
+          <div class="status-desc">Resource created successfully.</div>
+        </div>
+        <div class="status-card s2xx">
+          <div class="status-code">204</div>
+          <div class="status-name" style="color: var(--green);">No Content</div>
+          <div class="status-desc">Success, but no body (e.g., DELETE, PATCH).</div>
+        </div>
+        <div class="status-card s4xx">
+          <div class="status-code">400</div>
+          <div class="status-name" style="color: var(--accent2);">Bad Request</div>
+          <div class="status-desc">Invalid input from the client side.</div>
+        </div>
+        <div class="status-card s4xx">
+          <div class="status-code">401</div>
+          <div class="status-name" style="color: var(--accent2);">Unauthorized</div>
+          <div class="status-desc">Missing or invalid authentication token.</div>
+        </div>
+        <div class="status-card s4xx">
+          <div class="status-code">404</div>
+          <div class="status-name" style="color: var(--accent2);">Not Found</div>
+          <div class="status-desc">Resource doesn't exist or was deleted.</div>
+        </div>
+        <div class="status-card s4xx">
+          <div class="status-code">409</div>
+          <div class="status-name" style="color: var(--accent2);">Conflict</div>
+          <div class="status-desc">Resource already exists (e.g., registered email).</div>
+        </div>
+        <div class="status-card s4xx">
+          <div class="status-code">429</div>
+          <div class="status-name" style="color: var(--accent2);">Too Many Requests</div>
+          <div class="status-desc">Rate limit exceeded. Slow down.</div>
+        </div>
+        <div class="status-card s5xx">
+          <div class="status-code">500</div>
+          <div class="status-name" style="color: var(--red);">Server Error</div>
+          <div class="status-desc">Something went wrong on the server.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- TESTING -->
+    <section class="section reveal" id="testing">
+      <div class="section-header">
+        <span class="section-number">09</span>
+        <div>
+          <div class="section-title">Writing API Tests</div>
+          <div class="section-subtitle">Automating response validation with JavaScript</div>
+        </div>
+      </div>
+
+      <p>Tests in Postman are written in <strong>JavaScript</strong> and run <em>after</em> the response arrives. They live in the <strong>Tests</strong> tab of any request. Postman uses the <strong>Chai.js</strong> assertion library.</p>
+
+      <div class="info-box tip">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Golden Rule: Make Tests Fail First</strong>
+          Before trusting a test, verify it fails when the assertion is wrong. Change the expected value to something incorrect, run it, confirm it fails, then fix it. This ensures the test actually works.
+        </div>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab active" onclick="switchTab(this, 'tab-basic')">Basic Tests</button>
+        <button class="tab" onclick="switchTab(this, 'tab-json')">JSON Assertions</button>
+        <button class="tab" onclick="switchTab(this, 'tab-advanced')">Advanced</button>
+      </div>
+
+      <div id="tab-basic" class="tab-content active">
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+            <span class="code-lang">JavaScript · Tests Tab</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre><span class="cm">// Test 1: Check status code is 200</span>
+<span class="fn">pm.test</span>(<span class="str">"Status code is 200"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.response.to.have.status</span>(<span class="num">200</span>);
+});
+
+<span class="cm">// Test 2: Check one of multiple valid status codes</span>
+<span class="fn">pm.test</span>(<span class="str">"Status is 200 or 201"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.expect</span>(<span class="prop">pm.response.code</span>).<span class="fn">to.be.oneOf</span>([<span class="num">200</span>, <span class="num">201</span>]);
+});
+
+<span class="cm">// Test 3: Response time check</span>
+<span class="fn">pm.test</span>(<span class="str">"Response time < 500ms"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.expect</span>(<span class="prop">pm.response.responseTime</span>).<span class="fn">to.be.below</span>(<span class="num">500</span>);
+});</pre>
+        </div>
+      </div>
+
+      <div id="tab-json" class="tab-content">
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+            <span class="code-lang">JSON Response Assertions</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre><span class="cm">// Always parse JSON first</span>
+<span class="kw">const</span> <span class="var">response</span> <span class="op">=</span> <span class="fn">pm.response.json</span>();
+
+<span class="cm">// Check property value</span>
+<span class="fn">pm.test</span>(<span class="str">"Status is OK"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.expect</span>(<span class="var">response</span>.<span class="prop">status</span>).<span class="fn">to.eql</span>(<span class="str">"OK"</span>);
+});
+
+<span class="cm">// Check nested property</span>
+<span class="fn">pm.test</span>(<span class="str">"Has stock > 0"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.expect</span>(<span class="var">response</span>.<span class="prop">currentStock</span>).<span class="fn">to.be.above</span>(<span class="num">0</span>);
+});
+
+<span class="cm">// Check type</span>
+<span class="fn">pm.test</span>(<span class="str">"Name is a string"</span>, <span class="kw">function</span> () {
+    <span class="fn">pm.expect</span>(<span class="var">response</span>.<span class="prop">name</span>).<span class="fn">to.be.a</span>(<span class="str">"string"</span>);
+});
+
+<span class="cm">// Bracket notation for special characters</span>
+<span class="var">response</span>[<span class="str">"current-stock"</span>]  <span class="cm">// when key has hyphens</span></pre>
+        </div>
+      </div>
+
+      <div id="tab-advanced" class="tab-content">
+        <div class="code-block">
+          <div class="code-header">
+            <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+            <span class="code-lang">Advanced Test Patterns</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre><span class="cm">// Check array + filter</span>
+<span class="kw">const</span> <span class="var">books</span> <span class="op">=</span> <span class="fn">pm.response.json</span>();
+<span class="kw">const</span> <span class="var">available</span> <span class="op">=</span> <span class="var">books</span>.<span class="fn">filter</span>(<span class="var">b</span> <span class="op">=></span> <span class="var">b</span>.<span class="prop">available</span>);
+
+<span class="fn">pm.test</span>(<span class="str">"Has available books"</span>, () <span class="op">=></span> {
+    <span class="fn">pm.expect</span>(<span class="var">available</span>.<span class="prop">length</span>).<span class="fn">to.be.above</span>(<span class="num">0</span>);
+});
+
+<span class="cm">// Partial object match</span>
+<span class="fn">pm.test</span>(<span class="str">"Order contains required fields"</span>, () <span class="op">=></span> {
+    <span class="fn">pm.expect</span>(<span class="var">response</span>).<span class="fn">to.include</span>({
+        <span class="prop">customerName</span><span class="op">:</span> <span class="str">"John"</span>
+    });
+});
+
+<span class="cm">// Check header exists & value</span>
+<span class="fn">pm.test</span>(<span class="str">"Content-Type is JSON"</span>, () <span class="op">=></span> {
+    <span class="fn">pm.expect</span>(<span class="fn">pm.response.headers.get</span>(<span class="str">"Content-Type"</span>))
+        .<span class="fn">to.include</span>(<span class="str">"application/json"</span>);
+});
+
+<span class="cm">// Debug: log to Postman Console</span>
+<span class="fn">console.log</span>(<span class="str">"Response:"</span>, <span class="var">response</span>);</pre>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ASSERTIONS -->
+    <section class="section reveal" id="assertions">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <div>
+          <div class="section-title">Assertion Reference</div>
+          <div class="section-subtitle">Chai.js assertion patterns for common scenarios</div>
+        </div>
+      </div>
+
+      <div class="cheat-grid">
+        <div class="cheat-card">
+          <div class="cheat-card-header">Equality</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">value</span>).<span class="fn">to.eql</span>(<span class="num">42</span>)
+<span class="fn">pm.expect</span>(<span class="var">value</span>).<span class="fn">to.equal</span>(<span class="str">"foo"</span>)
+<span class="fn">pm.expect</span>(<span class="var">value</span>).<span class="fn">to.not.eql</span>(<span class="num">0</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Comparison</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">n</span>).<span class="fn">to.be.above</span>(<span class="num">0</span>)
+<span class="fn">pm.expect</span>(<span class="var">n</span>).<span class="fn">to.be.below</span>(<span class="num">100</span>)
+<span class="fn">pm.expect</span>(<span class="var">n</span>).<span class="fn">to.be.least</span>(<span class="num">1</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Types</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.a</span>(<span class="str">"string"</span>)
+<span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.a</span>(<span class="str">"number"</span>)
+<span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.an</span>(<span class="str">"array"</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Existence</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.exist</span>
+<span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.null</span>
+<span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.undefined</span></pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Strings</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">s</span>).<span class="fn">to.include</span>(<span class="str">"foo"</span>)
+<span class="fn">pm.expect</span>(<span class="var">s</span>).<span class="fn">to.match</span>(<span class="op">/</span><span class="str">^\d+$</span><span class="op">/</span>)
+<span class="fn">pm.expect</span>(<span class="var">s</span>).<span class="fn">to.have.length</span>(<span class="num">5</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Arrays</div>
+          <pre><span class="fn">pm.expect</span>(<span class="var">arr</span>).<span class="fn">to.not.be.empty</span>
+<span class="fn">pm.expect</span>(<span class="var">arr</span>).<span class="fn">to.have.length</span>(<span class="num">3</span>)
+<span class="fn">pm.expect</span>(<span class="var">v</span>).<span class="fn">to.be.oneOf</span>([<span class="str">"a"</span>, <span class="str">"b"</span>])</pre>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- VARIABLES SCOPE -->
+    <section class="section reveal" id="variables-scope">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <div>
+          <div class="section-title">Variable Scopes</div>
+          <div class="section-subtitle">Understanding scope hierarchy and when to use each type</div>
+        </div>
+      </div>
+
+      <p>Postman has four variable scopes, from broadest to narrowest. When you use <code>pm.variables.get()</code>, Postman looks from narrowest to broadest scope.</p>
+
+      <div class="scope-diagram">
+        <div class="scope-layer scope-global">
+          <div class="scope-label">🌍 Global Variables</div>
+          <div class="scope-desc">Available to ALL collections in a workspace. Good for quick prototyping or sharing data between collections.</div>
+          <div class="scope-api">
+            <code>pm.globals.set('key', value)</code> / <code>pm.globals.get('key')</code>
+          </div>
+        </div>
+        <div class="scope-layer scope-env">
+          <div class="scope-label">🌐 Environment Variables</div>
+          <div class="scope-desc">Tied to a selected environment (e.g., localhost, staging, production). Great for swapping base URLs and credentials.</div>
+          <div class="scope-api">
+            <code>pm.environment.set('key', value)</code> / <code>pm.environment.get('key')</code>
+          </div>
+        </div>
+        <div class="scope-layer scope-col">
+          <div class="scope-label">📁 Collection Variables</div>
+          <div class="scope-desc">Scoped to a single collection. Best default choice when you only have one environment. Stored in the collection file.</div>
+          <div class="scope-api">
+            <code>pm.collectionVariables.set('key', value)</code> / <code>pm.collectionVariables.get('key')</code>
+          </div>
+        </div>
+        <div class="scope-layer scope-local">
+          <div class="scope-label">⚡ Local Variables</div>
+          <div class="scope-desc">Only available in the current request. Automatically removed after execution. Used in collection runner.</div>
+          <div class="scope-api">
+            <code>pm.variables.set('key', value)</code> / <code>pm.variables.get('key')</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- DATA EXTRACTION -->
+    <section class="section reveal" id="data-extraction">
+      <div class="section-header">
+        <span class="section-number">12</span>
+        <div>
+          <div class="section-title">Data Extraction & Chaining</div>
+          <div class="section-subtitle">Passing data between requests dynamically</div>
+        </div>
+      </div>
+
+      <p>Instead of hardcoding IDs and values, extract them from API responses and store in variables. This makes tests resilient to data changes.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Request Chaining Pattern</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="cm">// In "POST /orders" Tests tab — extract and save orderId</span>
+<span class="kw">const</span> <span class="var">response</span> <span class="op">=</span> <span class="fn">pm.response.json</span>();
+<span class="kw">const</span> <span class="var">orderId</span> <span class="op">=</span> <span class="var">response</span>.<span class="prop">orderId</span>;
+
+<span class="fn">pm.globals.set</span>(<span class="str">"orderId"</span>, <span class="var">orderId</span>);
+<span class="fn">console.log</span>(<span class="str">"Saved orderId:"</span>, <span class="var">orderId</span>);
+
+<span class="cm">// In "GET /orders/:orderId" — use the saved variable</span>
+<span class="cm">// URL: {{baseUrl}}/orders/{{orderId}}</span>
+
+<span class="cm">// Find first available non-fiction book</span>
+<span class="kw">const</span> <span class="var">books</span> <span class="op">=</span> <span class="fn">pm.response.json</span>();
+<span class="kw">const</span> <span class="var">book</span> <span class="op">=</span> <span class="var">books</span>.<span class="fn">filter</span>(
+    <span class="var">b</span> <span class="op">=></span> <span class="var">b</span>.<span class="prop">available</span> <span class="op">&&</span> <span class="var">b</span>.<span class="prop">type</span> <span class="op">===</span> <span class="str">"non-fiction"</span>
+)[<span class="num">0</span>];
+
+<span class="fn">pm.globals.set</span>(<span class="str">"bookId"</span>, <span class="var">book</span>.<span class="prop">id</span>);  <span class="cm">// Use in next request</span></pre>
+      </div>
+
+      <h3>Random Data with Dynamic Variables</h3>
+      <p>Use Postman's built-in dynamic variables to generate unique test data on each run:</p>
+      <div class="pill-group">
+        <div class="pill">{{$randomFullName}}</div>
+        <div class="pill">{{$randomEmail}}</div>
+        <div class="pill">{{$randomInt}}</div>
+        <div class="pill">{{$guid}}</div>
+        <div class="pill">{{$timestamp}}</div>
+        <div class="pill">{{$randomFirstName}}</div>
+        <div class="pill">{{$randomCompanyName}}</div>
+        <div class="pill">{{$randomUrl}}</div>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Use in Scripts</strong>
+          To use dynamic variables inside a pre-request or test script (not just the URL/body), use:
+          <code>pm.variables.replaceIn('{{$randomFullName}}')</code>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- COLLECTION RUNNER -->
+    <section class="section reveal" id="collection-runner">
+      <div class="section-header">
+        <span class="section-number">13</span>
+        <div>
+          <div class="section-title">Collection Runner</div>
+          <div class="section-subtitle">Running entire test suites automatically</div>
+        </div>
+      </div>
+
+      <p>The Collection Runner executes every request in a collection in order — all in one click. It shows pass/fail results for every test in every request.</p>
+
+      <div class="cards-grid">
+        <div class="card" style="--card-accent: var(--blue);">
+          <div class="card-icon" style="background: rgba(77,157,224,0.1);">▶️</div>
+          <div class="card-title">Run All Requests</div>
+          <div class="card-desc">Execute the entire collection in sequence. Default order matches the collection layout.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--green);">
+          <div class="card-icon" style="background: rgba(17,179,134,0.1);">💾</div>
+          <div class="card-title">Save Responses</div>
+          <div class="card-desc">Check "Save responses" to inspect each response body after the run for debugging.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--purple);">
+          <div class="card-icon" style="background: rgba(139,92,246,0.1);">🔄</div>
+          <div class="card-title">Iterations</div>
+          <div class="card-desc">Run the collection multiple times. Combine with data files for data-driven testing.</div>
+        </div>
+      </div>
+
+      <h3>Controlling Execution Order</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Request Flow Control</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="cm">// Jump to a specific request (by name)</span>
+<span class="prop">pm.execution.setNextRequest</span>(<span class="str">"Get Order Details"</span>);
+
+<span class="cm">// Stop the collection run early</span>
+<span class="prop">pm.execution.setNextRequest</span>(<span class="kw">null</span>);
+
+<span class="cm">// Note: postman.setNextRequest() is DEPRECATED</span>
+<span class="cm">// Use pm.execution.setNextRequest() instead</span></pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- NEWMAN -->
+    <section class="section reveal" id="newman">
+      <div class="section-header">
+        <span class="section-number">14</span>
+        <div>
+          <div class="section-title">Newman CLI</div>
+          <div class="section-subtitle">Running Postman collections from the command line</div>
+        </div>
+      </div>
+
+      <p>Newman is a CLI tool that runs Postman collections outside the UI — perfect for CI/CD pipelines. It requires <strong>Node.js</strong>.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Install Newman</div>
+            <div class="step-desc"><code>npm install -g newman</code> — then verify with <code>newman --version</code></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Run a Collection</div>
+            <div class="step-desc">Export as JSON or use a public link. Then run: <code>newman run collection.json</code></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Generate HTML Reports</div>
+            <div class="step-desc">Install <code>newman-reporter-htmlextra</code> for rich, visual test reports.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Terminal — Newman Commands</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="cm"># Basic run</span>
+newman run collection.json
+
+<span class="cm"># With environment file</span>
+newman run collection.json -e environment.json
+
+<span class="cm"># With HTML report</span>
+newman run collection.json -r htmlextra \
+  --reporter-htmlextra-export report.html
+
+<span class="cm"># Pass global variables</span>
+newman run collection.json \
+  --global-var <span class="str">"baseUrl=https://api.example.com"</span>
+
+<span class="cm"># Add delay between requests (ms)</span>
+newman run collection.json --delay <span class="num">1000</span>
+
+<span class="cm"># Fix weird unicode in CI</span>
+newman run collection.json --disable-unicode</pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- CICD -->
+    <section class="section reveal" id="cicd">
+      <div class="section-header">
+        <span class="section-number">15</span>
+        <div>
+          <div class="section-title">CI/CD Integration</div>
+          <div class="section-subtitle">Automated testing in your deployment pipeline</div>
+        </div>
+      </div>
+
+      <div class="roadmap">
+        <div class="roadmap-item l1" data-level="01">
+          <div class="roadmap-level">Level 01</div>
+          <div class="roadmap-title">Manual Testing</div>
+          <div class="roadmap-tags">
+            <span class="rtag">Collections</span>
+            <span class="rtag">Requests</span>
+            <span class="rtag">Variables</span>
+          </div>
+        </div>
+        <div class="roadmap-item l2" data-level="02">
+          <div class="roadmap-level">Level 02</div>
+          <div class="roadmap-title">Test Automation</div>
+          <div class="roadmap-tags">
+            <span class="rtag">pm.test</span>
+            <span class="rtag">Assertions</span>
+            <span class="rtag">Console</span>
+          </div>
+        </div>
+        <div class="roadmap-item l3" data-level="03">
+          <div class="roadmap-level">Level 03</div>
+          <div class="roadmap-title">Scale & Schema</div>
+          <div class="roadmap-tags">
+            <span class="rtag">Runner</span>
+            <span class="rtag">JSON Schema</span>
+            <span class="rtag">Mocks</span>
+          </div>
+        </div>
+        <div class="roadmap-item l4" data-level="04">
+          <div class="roadmap-level">Level 04</div>
+          <div class="roadmap-title">CI/CD & Team</div>
+          <div class="roadmap-tags">
+            <span class="rtag">Postman CLI</span>
+            <span class="rtag">GitHub Actions</span>
+            <span class="rtag">Forks & PRs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">GitHub Actions Workflow (.github/workflows/api-tests.yml)</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="prop">name</span>: <span class="str">API Tests</span>
+<span class="prop">on</span>: [<span class="str">push</span>, <span class="str">pull_request</span>]
+
+<span class="prop">jobs</span>:
+  <span class="prop">test</span>:
+    <span class="prop">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="prop">steps</span>:
+      - <span class="prop">uses</span>: <span class="str">actions/checkout@v3</span>
+      
+      - <span class="prop">name</span>: <span class="str">Install Newman</span>
+        <span class="prop">run</span>: <span class="str">npm install -g newman</span>
+      
+      - <span class="prop">name</span>: <span class="str">Run API Tests</span>
+        <span class="prop">run</span>: |
+          newman run collection.json \
+            --global-var "apiKey=${{ secrets.API_KEY }}" \
+            -r cli,junit \
+            --reporter-junit-export results.xml
+      
+      - <span class="prop">name</span>: <span class="str">Upload Results</span>
+        <span class="prop">uses</span>: <span class="str">actions/upload-artifact@v3</span>
+        <span class="prop">with</span>:
+          <span class="prop">name</span>: <span class="str">test-results</span>
+          <span class="prop">path</span>: <span class="str">results.xml</span></pre>
+      </div>
+
+      <div class="info-box danger">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Never hardcode secrets in CI files</strong>
+          Always use GitHub repository secrets (Settings → Secrets) for API keys, tokens, and passwords. Reference them as <code>${{ secrets.YOUR_SECRET }}</code>.
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SCHEMA -->
+    <section class="section reveal" id="schema">
+      <div class="section-header">
+        <span class="section-number">16</span>
+        <div>
+          <div class="section-title">JSON Schema Validation</div>
+          <div class="section-subtitle">Validating response structure automatically</div>
+        </div>
+      </div>
+
+      <p>JSON Schema lets you define the <em>shape</em> of an expected response and automatically validate that every response matches it. This catches unexpected API changes early.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot dot-red"></div><div class="code-dot dot-yellow"></div><div class="code-dot dot-green"></div></div>
+          <span class="code-lang">Schema Validation Test</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <pre><span class="kw">const</span> <span class="var">schema</span> = {
+    <span class="str">"type"</span>: <span class="str">"object"</span>,
+    <span class="str">"required"</span>: [<span class="str">"id"</span>, <span class="str">"bookId"</span>, <span class="str">"customerName"</span>],
+    <span class="str">"properties"</span>: {
+        <span class="str">"id"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> },
+        <span class="str">"bookId"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span> },
+        <span class="str">"customerName"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> },
+        <span class="str">"createdBy"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span> },
+        <span class="str">"quantity"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"minimum"</span>: <span class="num">1</span> },
+        <span class="str">"timestamp"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"format"</span>: <span class="str">"date-time"</span> }
+    },
+    <span class="cm">// Block unexpected extra fields</span>
+    <span class="str">"additionalProperties"</span>: <span class="kw">false</span>
+};
+
+<span class="fn">pm.test</span>(<span class="str">"Response matches schema"</span>, () <span class="op">=></span> {
+    <span class="fn">pm.response.to.have.jsonSchema</span>(<span class="var">schema</span>);
+});</pre>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Schema Type Reference</strong>
+          Valid types: <code>string</code>, <code>number</code>, <code>integer</code>, <code>boolean</code>, <code>null</code>, <code>object</code>, <code>array</code>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- MOCKS -->
+    <section class="section reveal" id="mocks">
+      <div class="section-header">
+        <span class="section-number">17</span>
+        <div>
+          <div class="section-title">Mock Servers</div>
+          <div class="section-subtitle">Testing without a real API backend</div>
+        </div>
+      </div>
+
+      <p>Mock servers let you create simulated API endpoints with predefined responses. Use them to test schema validation, error handling, or when the real API isn't ready yet.</p>
+
+      <div class="cards-grid">
+        <div class="card" style="--card-accent: var(--accent);">
+          <div class="card-icon" style="background: rgba(255,107,53,0.1);">🧪</div>
+          <div class="card-title">Safe Schema Testing</div>
+          <div class="card-desc">Test schema changes without affecting the real API or creating real data.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--blue);">
+          <div class="card-icon" style="background: rgba(77,157,224,0.1);">🚧</div>
+          <div class="card-title">Early Development</div>
+          <div class="card-desc">Start writing and testing against a mock before the real backend is built.</div>
+        </div>
+        <div class="card" style="--card-accent: var(--purple);">
+          <div class="card-icon" style="background: rgba(139,92,246,0.1);">🔁</div>
+          <div class="card-title">Controlled Responses</div>
+          <div class="card-desc">Return exactly the response you want to test edge cases: missing fields, wrong types, errors.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- CHEATSHEET -->
+    <section class="section reveal" id="cheatsheet">
+      <div class="section-header">
+        <span class="section-number">18</span>
+        <div>
+          <div class="section-title">Quick Reference Cheatsheet</div>
+          <div class="section-subtitle">Everything at a glance</div>
+        </div>
+      </div>
+
+      <div class="cheat-grid">
+        <div class="cheat-card">
+          <div class="cheat-card-header">Global Variables</div>
+          <pre><span class="fn">pm.globals.set</span>(<span class="str">'key'</span>, <span class="var">val</span>)
+<span class="fn">pm.globals.get</span>(<span class="str">'key'</span>)
+<span class="fn">pm.globals.unset</span>(<span class="str">'key'</span>)
+<span class="fn">pm.globals.clear</span>()</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Collection Variables</div>
+          <pre><span class="fn">pm.collectionVariables.set</span>(<span class="str">'key'</span>, <span class="var">v</span>)
+<span class="fn">pm.collectionVariables.get</span>(<span class="str">'key'</span>)
+<span class="fn">pm.collectionVariables.unset</span>(<span class="str">'key'</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Environment Variables</div>
+          <pre><span class="fn">pm.environment.set</span>(<span class="str">'key'</span>, <span class="var">val</span>)
+<span class="fn">pm.environment.get</span>(<span class="str">'key'</span>)
+<span class="fn">pm.environment.unset</span>(<span class="str">'key'</span>)
+<span class="prop">pm.environment.name</span>  <span class="cm">// active env</span></pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Response Access</div>
+          <pre><span class="fn">pm.response.json</span>()
+<span class="fn">pm.response.text</span>()
+<span class="prop">pm.response.code</span>
+<span class="prop">pm.response.responseTime</span>
+<span class="fn">pm.response.headers.get</span>(<span class="str">'name'</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">Request Control</div>
+          <pre><span class="cm">// Set next request</span>
+<span class="fn">pm.execution.setNextRequest</span>(<span class="str">'Name'</span>)
+<span class="cm">// Stop execution</span>
+<span class="fn">pm.execution.setNextRequest</span>(<span class="kw">null</span>)</pre>
+        </div>
+        <div class="cheat-card">
+          <div class="cheat-card-header">pm.sendRequest</div>
+          <pre><span class="fn">pm.sendRequest</span>(<span class="str">'https://url'</span>, (<span class="var">err</span>, <span class="var">res</span>) <span class="op">=></span> {
+  <span class="kw">if</span> (<span class="var">err</span>) <span class="kw">throw</span> <span class="kw">new</span> <span class="fn">Error</span>(<span class="var">err</span>);
+  <span class="fn">console.log</span>(<span class="var">res</span>.<span class="fn">json</span>());
+});</pre>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- API REFERENCE -->
+    <section class="section reveal" id="api-ref">
+      <div class="section-header">
+        <span class="section-number">19</span>
+        <div>
+          <div class="section-title">Simple Books API Reference</div>
+          <div class="section-subtitle">The practice API used throughout this course</div>
+        </div>
+      </div>
+
+      <div class="info-box info">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Base URL</strong>
+          <code>https://simple-books-api.click</code>
+        </div>
+      </div>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Auth?</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td class="endpoint-url">/status</td>
+            <td>No</td>
+            <td>Check if API is running</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td class="endpoint-url">/books</td>
+            <td>No</td>
+            <td>List books. Optional: <code>?type=fiction&limit=5</code></td>
+          </tr>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td class="endpoint-url">/books/:bookId</td>
+            <td>No</td>
+            <td>Get a single book's details</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge POST">POST</span></td>
+            <td class="endpoint-url">/api-clients</td>
+            <td>No</td>
+            <td>Register and get an access token</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge POST">POST</span></td>
+            <td class="endpoint-url">/orders</td>
+            <td>✅ Yes</td>
+            <td>Submit a new book order</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td class="endpoint-url">/orders</td>
+            <td>✅ Yes</td>
+            <td>View all your orders</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge GET">GET</span></td>
+            <td class="endpoint-url">/orders/:orderId</td>
+            <td>✅ Yes</td>
+            <td>Get a single order by ID</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge PATCH">PATCH</span></td>
+            <td class="endpoint-url">/orders/:orderId</td>
+            <td>✅ Yes</td>
+            <td>Update customer name on an order</td>
+          </tr>
+          <tr>
+            <td><span class="method-badge DELETE">DELETE</span></td>
+            <td class="endpoint-url">/orders/:orderId</td>
+            <td>✅ Yes</td>
+            <td>Delete an order permanently</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- DYNAMIC VARS -->
+    <section class="section reveal" id="dynamic-vars">
+      <div class="section-header">
+        <span class="section-number">20</span>
+        <div>
+          <div class="section-title">Dynamic Variables Reference</div>
+          <div class="section-subtitle">Built-in generators for random test data</div>
+        </div>
+      </div>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr><th>Variable</th><th>Description</th><th>Example Output</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="endpoint-url">{{$guid}}</td><td>Globally unique identifier v4</td><td>15aacbb1-1615-47d8-b001-e5411a044761</td></tr>
+          <tr><td class="endpoint-url">{{$timestamp}}</td><td>Current Unix timestamp</td><td>1561013396</td></tr>
+          <tr><td class="endpoint-url">{{$randomInt}}</td><td>Random integer 0–1000</td><td>764</td></tr>
+          <tr><td class="endpoint-url">{{$randomFullName}}</td><td>Random first + last name</td><td>Layne Adams</td></tr>
+          <tr><td class="endpoint-url">{{$randomEmail}}</td><td>Random email address</td><td>Mable_Crist@hotmail.com</td></tr>
+          <tr><td class="endpoint-url">{{$randomFirstName}}</td><td>Random first name</td><td>Dillan</td></tr>
+          <tr><td class="endpoint-url">{{$randomLastName}}</td><td>Random last name</td><td>Schamberger</td></tr>
+          <tr><td class="endpoint-url">{{$randomUrl}}</td><td>Random URL</td><td>https://daphney.biz</td></tr>
+          <tr><td class="endpoint-url">{{$randomUUID}}</td><td>Random UUID</td><td>1f9a0bc0-582c-466f...</td></tr>
+          <tr><td class="endpoint-url">{{$randomBoolean}}</td><td>true or false (as string)</td><td>"true"</td></tr>
+          <tr><td class="endpoint-url">{{$randomPassword}}</td><td>Random password string</td><td>v_Ptr4aTaB...</td></tr>
+          <tr><td class="endpoint-url">{{$randomJobTitle}}</td><td>Random job title</td><td>Product Usability Consultant</td></tr>
+          <tr><td class="endpoint-url">{{$randomCompanyName}}</td><td>Random company name</td><td>Christiansen LLC</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warning">
+        <div class="info-box-icon"></div>
+        <div class="info-box-content">
+          <strong>Script Usage</strong>
+          Dynamic variables like <code>{{$randomFullName}}</code> work in the URL, headers, and body directly. In scripts, use <code>pm.variables.replaceIn('{{$randomFullName}}')</code> to get the resolved string.
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div style="padding: 40px 0 80px; text-align: center; color: var(--text3); font-size: 13px;">
+      <div style="font-family: 'Space Mono', monospace; color: var(--accent); margin-bottom: 8px;">// END OF GUIDE</div>
+      <p style="margin-bottom: 4px;">Based on the Postman Beginner's Course by Valentin Despa</p>
+      <p>Simple Books API · Postman Quick Reference Guide · v1.9.1</p>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+  // ── Tab switching ──
+  function switchTab(btn, tabId) {
+    const allTabs = btn.closest('.tab-nav').querySelectorAll('.tab');
+    const parent = btn.closest('.section');
+    const allContents = parent.querySelectorAll('.tab-content');
+    allTabs.forEach(t => t.classList.remove('active'));
+    allContents.forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // ── Copy code ──
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+    });
+  }
+
+  // ── Nav active state ──
+  function setActive(el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelector('.sidebar').classList.remove('open');
+  }
+
+  // ── Search/filter nav ──
+  function filterNav(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  // ── Scroll progress ──
+  window.addEventListener('scroll', () => {
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = Math.round((window.scrollY / docH) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+  });
+
+  // ── Intersection Observer for reveal animations ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Update active nav item
+        const id = entry.target.id;
+        if (id) {
+          const navLink = document.querySelector(`.nav-item[href="#${id}"]`);
+          if (navLink) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            navLink.classList.add('active');
+          }
+        }
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Close sidebar on outside click (mobile)
+  document.addEventListener('click', (e) => {
+    const sidebar = document.querySelector('.sidebar');
+    const hamburger = document.querySelector('.hamburger');
+    if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== hamburger) {
+      sidebar.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>
